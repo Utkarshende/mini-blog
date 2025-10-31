@@ -23,15 +23,6 @@ const connectDB = async () => {
 }
 };
 
-app.get("/api/requests-count",(req, res)=>{
-    res.json({requestCount});
-});
-
-app.use((req,res,next)=>{
-requestCount++;
-next();
-})
-
 app.get("/", (req, res) => {
 res.json({
     success:true,
@@ -49,18 +40,8 @@ const checkHeaderKey=(req, res, next)=>{
         res.status(401).json({message:"Unauthorized"});
         }
     };
-
 app.use(checkHeaderKey);
 
-app.get("/api/test1",(req, res)=>{
-        console.log("Actual Controller Test-1 called");
-        res.json({message:"Test-1 router reached"});
-    },
-    app.get("/api/test2",(req, res)=>{
-        console.log("Actual Controller Test-2 called");
-        res.json({message:"Test-2 router reached"});
-    })
-);
 
 
 
