@@ -1,3 +1,3 @@
-# Tiny Blog 📑
+# [Tiny Blog 📑] {https://mini-blog-front.onrender.com/}
 
-This is a hobby project to understand how Blog application works and their architecture.
+This is a hobby project to understand how Blog application works.
