@@ -9,15 +9,20 @@ if(!title || !content || !category || !author){
         message:"All fields are required"
     });
 }
-
     const newBlog = new Blog({
         title,
         content,
         category,
-        author
+        author,
+        slug:`temp-slug-${Date.now()}`
     });
     
     const savedBlog = await newBlog.save();
+
+    savedBlog.slug =`${title.lowerCase().replace(/ /g,'-')}-${savedBlog._id}`.replace(/[^\w-]+/g,"");
+
+    await savedBlog.save();
+    
     res.status(201).json({
         success:true,
         message:"Blog created successfully",
