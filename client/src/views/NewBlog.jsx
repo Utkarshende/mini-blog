@@ -1,6 +1,6 @@
 import MarkdownEditor from '@uiw/react-markdown-editor';
 import { useEffect, useState } from 'react';
-import { BLOG_CATEGORIES } from './../constants';
+import { BLOG_CATEGORIES } from './../CONSTANTS.jsx';
 import axios from 'axios';
 import { getCurrentUser } from './../util.js';
 import { Toaster } from 'react-hot-toast';
