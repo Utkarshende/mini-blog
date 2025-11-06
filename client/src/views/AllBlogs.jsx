@@ -1,28 +1,29 @@
-import React, { useEffect, useState } from 'react'
-import { getCurrentUser } from './../util.js';
 import axios from 'axios';
+import { useEffect, useState } from 'react'
 import BlogCard from '../components/BlogCard.jsx';
-function AllBlogs() {
+import { getCurrentUser } from './../util.js';
 
+
+function AllBlogs() {
   const [user, setUser] = useState(null);
   const [blogs, setBlogs] = useState([]);
 
   const fetchBlogs = async () => {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/blogs`);
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/blogs?author=${user?._id || ""}`);
   setBlogs(response.data.data);
-  console.log(response.data);
   };
 
   useEffect(() => {
-    setUser(getCurrentUser());  
-    fetchBlogs();
+    setUser(getCurrentUser());
   },[]);
 
+useEffect(()=>{
+fetchBlogs();
+},[user])
 
   return (
     <div>
-      <h1>
-        All Blogs</h1>
+      <h1> All Blogs</h1>
         {user ? `Hello, ${user.name} !` : "Welcome Guest !"}
 <div className='container mx-auto p-4'>
   {

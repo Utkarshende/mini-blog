@@ -31,7 +31,19 @@ if(!title || !content || !category || !author){
 };
 
 const getBlogs = async (req, res) => {
-    const blogs = await Blog.find().populate('author','_id name email');scrollTo({
+ const {author} = req.query;
+
+ const conditions =[
+    {status: "published"}];
+
+    if(author){
+        conditions.push({author: author});}
+
+    const blogs = await Blog.find({
+        $or: conditions,
+    })
+    .populate('author','_id name email')
+    .sort({
         createdAt:-1,
     });
     res.status(200).json({
