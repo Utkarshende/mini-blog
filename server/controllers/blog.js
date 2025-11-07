@@ -44,7 +44,8 @@ const getBlogs = async (req, res) => {
     })
     .populate('author','_id name email')
     .sort({
-        createdAt:-1,
+        status:1,
+        updatedAt:-1
     });
     res.status(200).json({
         success:true,
@@ -53,4 +54,23 @@ const getBlogs = async (req, res) => {
     });
 };
 
-export { postBlogs, getBlogs };
+const getBlogForSlug = async (req, res) => {
+    const {slug} = req.params;
+
+    const blog= await Blog.findOne({slug:slug}).populate('author','_id name email');
+
+    if (!blog){
+        return res.status(404).json({
+            success:false,
+            message:"Blog not found"
+        });
+    }
+    res.status(200).json({
+        success:true,
+        data:blog,
+        message:"Blog fetched successfully"
+    });
+}
+
+
+export { postBlogs, getBlogs, getBlogForSlug };
