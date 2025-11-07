@@ -14,7 +14,7 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path ="/" element={<AllBlogs/>}/>
         <Route path="/new" element={<NewBlog/>}/>
-        <Route path="/edit/:id" element={<EditBlog/>}/>
+        <Route path="/edit/:slug" element={<EditBlog/>}/>
         <Route path="/blog/:slug" element={<ReadBlog/>}/>
         <Route path="*" 
         element={<h1 className='text-center mt-5'> 404 Not Found</h1>}/>

@@ -70,7 +70,16 @@ const getBlogForSlug = async (req, res) => {
         data:blog,
         message:"Blog fetched successfully"
     });
-}
+};
 
+const patchPublishBlog = async(req, res)=>{
+const{slug}=req.params;
+await Blog.findByIdAndUpdate({slug : slug},{status : "published"});
 
-export { postBlogs, getBlogs, getBlogForSlug };
+res.status(200).json({
+    success:true,
+    message :"Blog Published Successfully !"
+})
+};
+
+export { postBlogs, getBlogs, getBlogForSlug ,patchPublishBlog};
