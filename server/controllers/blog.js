@@ -82,4 +82,27 @@ res.status(200).json({
 })
 };
 
-export { postBlogs, getBlogs, getBlogForSlug ,patchPublishBlog};
+const putBlogs=async (req, res)=>{
+
+    const {slug} = req.params;
+    const {title, category,content}=req.body;
+
+    if(!title || !category || !content){
+        return res.status(400).json({
+            success:false,
+            message:"All fileds required"
+        });
+    }
+
+    const blog= await Blog.findOneAndUpdate({slug: slug}, 
+        {title, category,content});
+
+        return resizeBy.status(200).json({
+            success:true,
+            message : "Blogs Updated Successfully",
+            blog :blog,
+        });
+
+}
+
+export { postBlogs, getBlogs, getBlogForSlug ,patchPublishBlog,putBlogs};
