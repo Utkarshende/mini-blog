@@ -30,33 +30,49 @@ const blogData = response?.data?.blog;
 },[]);
 
 const updateBlog = async () => {
+  try{
   const response = await axios.put(`${import.meta.env.VITE_API_URL}/blogs/${slug}`,{
     title,
     content,
     category
-});
+},
+{
+  headers: {
+    Authorization:`Bearer ${localStorage.getItem("token")} `
+  }}
+);
 
 if (response?.data?.success){
   toast.success("Blog created successfully");
   setTimeout(()=>{
     window.location.href="/";
   },2000);
-};
 }
+}
+catch (err){
+toast.error(err?.response?.data?.message || "Error updating blog");
+}
+};
 
 const publishBlog = async () => {
+  try{
   const response = await axios.patch(
-    `${import.meta.env.VITE_API_URL}/blogs/${slug}/publish`
-  )
+    `${import.meta.env.VITE_API_URL}/blogs/${slug}/publish`,
+    {
+  headers: {
+    Authorization:`Bearer ${localStorage.getItem("token")} `
+  }}
+  );
   if (response?.data?.sucess){
 toast.success("Blog published succeefully");
 setTimeout(()=>{
   window.location.href="/"
 },2000);
+  }}
+  catch(err){
+toast.error(err?.response?.data?.message || "Error publishing blog");
   }
 };
-
-
   return (
     <div className='container mx-auto p-4'>
       <h1>New Blog</h1>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { BLOG_CATEGORIES } from './../CONSTANTS.jsx';
 import axios from 'axios';
 import { getCurrentUser } from './../util.js';
-import { Toaster } from 'react-hot-toast';
+import toast,{ Toaster } from 'react-hot-toast';
 
 function NewBlog() {
  const [content, setContent]= useState("");
@@ -16,19 +16,27 @@ function NewBlog() {
 },[]);
 
 const saveBlog = async () => {
+  try{
   const response = await axios.post(`${import.meta.env.VITE_API_URL}/blogs`,{
     title,
     content,
     category,
    author:user?._id 
-});
+},
+{
+  header: {
+    Authorization:`Bearer ${localStorage.getItem("token")} `
+  }});
 
 if (response?.data?.success){
   toast.success("Blog created successfully");
   setTimeout(()=>{
     window.location.href="/";
   },2000);
-};
+}
+}
+catch(err){
+  toast.error(err?.response?.data?.message || "Error creating blog");
 }
   return (
     <div className='container mx-auto p-4'>

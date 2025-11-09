@@ -9,12 +9,16 @@ const [user, setUser] = useState({
 });
 
 const loginUser = async () => {
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, user);
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}/login`, 
+      user
+    );
   if(response?.data?.success){
     localStorage.setItem("loggedInUser",JSON.stringify(response.data.user));
-  window.location.href="/";
-  }   
-  console.log(response.data)};
+  localStorage.setItem("token", response.data.token);
+
+    window.location.href="/";
+  }  
 
 
   return (
@@ -50,6 +54,6 @@ const loginUser = async () => {
 
           </div>
   )
-}
+}}
 
 export default Login
