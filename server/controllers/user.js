@@ -1,5 +1,6 @@
 import User from "./../models/User.js";
 import md5 from "md5";
+import jwt from 'jsonwebtoken'
 
 const postSignup= async (req, res)=>{
  const {name, email, password}=req.body;
@@ -68,10 +69,20 @@ const postLogin= async (req, res)=>{
     password:md5(password)}).select("_id name email");
     
     if(existingUser){
+
+const token = jwt.sign(
+    {
+        id: existingUser._id, email: existingUser.email, name: existingUser.name},
+        process.env.JWT_SECRET,
+        {expiresIn:"1d"}
+    );
+
         return res.json({
             success:true,
             message:"User logged in successfully",
-            user:existingUser
+            user:existingUser,
+            token,
+
         });
     }
         else{
