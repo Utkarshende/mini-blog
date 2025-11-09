@@ -4,7 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { postSignup ,postLogin,} from "./controllers/user.js";
 import { postBlogs, getBlogs, getBlogForSlug, patchPublishBlog,putBlogs} from "./controllers/blog.js";
-import jwt from 'jsonwebtoken',
+import jwt from 'jsonwebtoken';
 import Blog from "./models/Blog.js";
 
 dotenv.config();

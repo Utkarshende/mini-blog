@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, {useState, useEffect } from 'react'
 import { getCurrentUser } from '../util';
 import { Link } from 'react-router';
 

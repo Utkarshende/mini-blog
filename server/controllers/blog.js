@@ -84,7 +84,7 @@ const blog = await Blog.findOne({slug : slug});
 
 if(!blog){
     return res.status(404).json({
-        success:false;
+        success:false,
         message:"Blog not found"
     });
 }
