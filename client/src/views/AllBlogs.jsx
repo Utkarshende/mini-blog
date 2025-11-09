@@ -36,7 +36,8 @@ fetchBlogs();
         category, 
         slug, 
         updatedAt,
-      publishedAt} = blog;
+      publishedAt,
+    viewCount} = blog;
       return
       <BlogCard key={blog._id}
       title={title}
@@ -46,6 +47,7 @@ fetchBlogs();
       slug={slug}
       updatedAt={updatedAt}
       publishedAt={publishedAt}
+      viewCount={viewCount}
       />
       })
   }

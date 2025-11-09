@@ -4,7 +4,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { postSignup ,postLogin,} from "./controllers/user.js";
 import { postBlogs, getBlogs, getBlogForSlug, patchPublishBlog,putBlogs} from "./controllers/blog.js";
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken',
+import Blog from "./models/Blog.js";
 
 dotenv.config();
 
@@ -46,11 +47,25 @@ try{
     }
 };
 
+const increasedViewCount =async (req, res, next )=>{
+const {slug} = req.params;
+
+try{
+    const blog = mongoose.model("Blog");
+    if(blog){
+        blog.viewCount+=1;
+        await blog.bulkSave();
+    }
+}
+catch (error){
+    console.error("Error increasing view cpunt", error);
+  
+}next();};
 
 app.post("/signup",postSignup);
 app.post("/login",postLogin);
 app.get("/blogs",getBlogs);
-app.get("/blogs/slug",getBlogForSlug);
+app.get("/blogs/slug",increasedViewCount,getBlogForSlug);
 app.post("/blogs",jwtCheck,postBlogs);
 app.patch("/blogs/:slug/publish",jwtCheck,patchPublishBlog);
 app.put("/blogs/:slug",jwtCheck, putBlogs);

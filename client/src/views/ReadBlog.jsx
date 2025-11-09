@@ -26,7 +26,9 @@ function ReadBlog() {
         {blog.title}
       </h1>
       <p>
-        Published On: {new Date (blog.updatedAt || blog.updateedAt).toLocaleString()}
+        Published On: {new Date (blog.updatedAt || blog.updateedAt).toLocaleString()},
+        Read By : {blog.viewCount} {""} people
+      
       </p>
       <div className="flex items-center mb-4">
          <span className="text-2xl bg-orange-400 px-4 py-2 
