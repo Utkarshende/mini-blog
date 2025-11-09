@@ -1,22 +1,11 @@
+import { Suspense } from "react";
 import Blog from "./../models/Blog.js";
 import jwt, { decode } from 'jsonwebtoken'
 
 const postBlogs = async (req, res) => {
 const {title, content, category} = req.body;
-const {authorization} = req.header;
-console.log(authorization);
-
-let decodedToken;
-
-try{
-    decodedToken = jwt.verify(
-    authorization.split("")[1],
-    process.env.JWT_SECRET
-);
-}catch (err){
-return res.status(200).json({message:"Invalid Token"});
-}
-console.log(decodedToken);
+ 
+const {user} = req;
 
 if(!title || !content || !category ){
     return res.status(400).json({
@@ -89,6 +78,24 @@ const getBlogForSlug = async (req, res) => {
 
 const patchPublishBlog = async(req, res)=>{
 const{slug}=req.params;
+const {user}=req;
+
+const blog = await Blog.findOne({slug : slug});
+
+if(!blog){
+    return res.status(404).json({
+        success:false;
+        message:"Blog not found"
+    });
+}
+
+if(blog.author.toString() !== user?.id){
+    return res.status(403).json({
+        success:false,
+        message : "You are not authorized to publish this blog"
+    });
+}
+
 await Blog.findByIdAndUpdate({slug : slug},{status : "published"});
 
 res.status(200).json({
@@ -101,6 +108,24 @@ const putBlogs=async (req, res)=>{
 
     const {slug} = req.params;
     const {title, category,content}=req.body;
+
+    const {user} = req;
+
+const existingBlog =await Blog.findOne({slug :slug});
+
+if(!existingBlog){
+    return res.status(404).json({
+        success:false,
+        message:"Blog not found"
+    });
+}
+
+if(existingBlog.author.toString() !== user.id){
+    return res.status(403).json({
+        success:false,
+        message:"You are not authorized to update this blog"
+    })
+}
 
     if(!title || !category || !content){
         return res.status(400).json({
