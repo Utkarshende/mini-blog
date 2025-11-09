@@ -2,7 +2,7 @@ import {useParams} from "react-router";
 import {useState,useEffect} from "react";
 import axios from "axios";  
 import MarkdownEditor from '@uiw/react-markdown-editor';
-
+import Navbar from "../components/Navbar.jsx";
 
 function ReadBlog() {
 
@@ -21,6 +21,7 @@ function ReadBlog() {
     
   return (
     <div className="mx-auto container p-4">
+      <Navbar/>
       <h1 className="text-2xl font-bold mb-4">
         {blog.title}
       </h1>

@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react'
 import BlogCard from '../components/BlogCard.jsx';
 import { getCurrentUser } from './../util.js';
+import Navbar from '../components/Navbar.jsx';
 
 
 function AllBlogs() {
@@ -23,9 +24,9 @@ fetchBlogs();
 
   return (
     <div>
-      <h1> All Blogs</h1>
-        {user ? `Hello, ${user.name} !` : "Welcome Guest !"}
+      
 <div className='container mx-auto p-4'>
+  <Navbar/>
   {
     blogs.map((blog) => {
       const {_id, 

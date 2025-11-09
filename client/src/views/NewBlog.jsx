@@ -4,6 +4,7 @@ import { BLOG_CATEGORIES } from './../CONSTANTS.jsx';
 import axios from 'axios';
 import { getCurrentUser } from './../util.js';
 import toast,{ Toaster } from 'react-hot-toast';
+import Navbar from '../components/Navbar.jsx';
 
 function NewBlog() {
  const [content, setContent]= useState("");
@@ -40,6 +41,7 @@ catch(err){
 }
   return (
     <div className='container mx-auto p-4'>
+      <Navbar/>
       <h1>New Blog</h1>
 <input type="text" placeholder='Blog Title' 
 className='border p-2 w-full my-4'
@@ -68,6 +70,6 @@ onChange={(e)=>setTitle(e.target.value)}/>
       <Toaster/>
     </div>
   )
-}
+}}
 
 export default NewBlog

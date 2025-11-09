@@ -5,6 +5,7 @@ import toast,{ Toaster } from 'react-hot-toast';
 import { BLOG_CATEGORIES } from './../CONSTANTS.jsx';
 import { getCurrentUser } from './../util.js';
 import {useParams} from 'react-router'
+import Navbar from '../components/Navbar.jsx';
 
 function EditBlog() {
  const [content, setContent]= useState("");
@@ -75,6 +76,7 @@ toast.error(err?.response?.data?.message || "Error publishing blog");
 };
   return (
     <div className='container mx-auto p-4'>
+      <Navbar/>
       <h1>New Blog</h1>
 <input type="text" placeholder='Blog Title' 
 className='border p-2 w-full my-4'
