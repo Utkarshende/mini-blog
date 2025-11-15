@@ -33,12 +33,15 @@ res.json({
 
 const jwtCheck = (req, res, next)=>{
     req.user=null;
-const {authorization} = req.header;  
+
+const {authorization} = req.header.authorization;  
+
+
 if(!authorization){
     return res.status(400).json({message : "Authorization token missing"});
 }
 try{
-    const token = authorization.split("")[1];
+    const token = authorization.split(" ")[1];
     const decoded = jwt.verify(token,process.env.JWT_SECRET);
     req.user = decoded;
     next();
@@ -51,14 +54,13 @@ const increasedViewCount =async (req, res, next )=>{
 const {slug} = req.params;
 
 try{
-    const blog = mongoose.model("Blog");
-    if(blog){
-        blog.viewCount+=1;
-        await blog.bulkSave();
-    }
+    await Blog.updateOne(
+        { slug: slug },
+        { $inc: { viewCount: 1 } }
+    );
 }
 catch (error){
-    console.error("Error increasing view cpunt", error);
+    console.error("Error increasing view count", error);
   
 }next();};
 

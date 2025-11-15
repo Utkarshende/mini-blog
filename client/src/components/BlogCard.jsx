@@ -1,62 +1,73 @@
 import React from 'react'
-import { Link } from 'react-router';
+import { Link } from 'react-router'; 
 
 function BlogCard({
     title,
     author,
-   publishedAt,
-   updatedAt,
-   status,
+    publishedAt,
+    updatedAt,
+    // Note: status prop is important for the read/edit decision
+    status, 
     category,
     slug,
     viewCount
 }) {
-  return (
-    <div className='border p-4 my-4 rounded-md relative'> 
-      <h2>
-        {status != "published" ? (
-          <span>
-            {status}
-          </span>
-        ):null }
-        {title}
-        </h2>
-       
-        <div className='flex items-center gap-4 my-2'>
-        <div className=' flex item-center text-2xl font-semibold justify-center bg-orange-500 w-[50px] h-[50px] text-center rounded-full' >
-            {author.name.substring(0,1)}
+    return (
+        <div className='border p-4 my-4 rounded-md relative shadow-md hover:shadow-lg transition-shadow'> 
+            <h2 className='text-xl font-bold mb-2'>
+                {/* Display status for non-published blogs (Draft/Archived) */}
+                {status !== "published" ? (
+                    <span className='mr-2 text-sm text-red-500 bg-red-100 px-2 py-1 rounded-full font-semibold'>
+                        {status.toUpperCase()}
+                    </span>
+                ) : null}
+                {title}
+            </h2>
+            
+            {/* Author Info */}
+            <div className='flex items-center gap-4 my-2'>
+                <div className='flex items-center text-xl font-semibold justify-center bg-orange-500 w-[40px] h-[40px] text-white rounded-full' >
+                    {author.name.substring(0, 1)}
+                </div>
+                <div>
+                    <p className='font-medium'>{author.name}</p>
+                    <p className='text-sm text-gray-500'>{author.email}</p>
+                </div>
             </div>
             
-            <div>
-        <p>{author.name}</p>
-       <p>{author.email}</p>
+            {/* Metadata */}
+            <p className='text-sm mt-2 text-gray-600'>
+                {/* Use publishedAt if available, otherwise updatedAt */}
+                Published On: {new Date(publishedAt || updatedAt).toLocaleString()},
+                Read By: {viewCount}
+            </p>
+
+            {/* Category Badge (Position adjusted for better flow) */}
+            <span className='absolute top-4 right-4 bg-gray-200 px-3 py-1
+            rounded-md text-gray-700 text-xs font-semibold'>   
+                {category}
+            </span>
+            
+            {/* Action Link (Read More / Edit) */}
+            <div className='mt-4 pt-2 border-t border-gray-100'>
+                {status === "published" ? (
+                    <Link 
+                        className='inline-block bg-gray-700 text-white px-4 py-2 rounded text-sm hover:bg-gray-800 transition-colors'
+                        to={`/blog/${slug}`}
+                    >
+                        Read More
+                    </Link>
+                ) : (
+                    <Link 
+                        className='inline-block bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors'
+                        to={`/edit/${slug}`}
+                    >
+                        Edit
+                    </Link>
+                )}
             </div>
-
-            </div>
-        <p className='text-sm mt-2'>
-          Published On: {new Date(publishedAt || updatedAt).toLocaleString()},
-          Read By :{viewCount}
-        </p>
-
-
-    <span className='absolute top-2 right-2 bg-gray-200 px-2 py-1
-     rounded-md text-gray-700 text-xs font-semibold'>   
-        { category}
-        </span>
-{
-    status === "published" ? (
-         <Link className='cursor-pointer absolute bg-gray-700 text-white px-6 py-2 border-md'
-        to={`/blog/${slug}`}>
-        Read More</Link>
-  ) : (
-    <Link className='cursor-pointer absolute bg-gray-700 text-white px-6 py-2 border-md'
-        to={`/edit/${slug}`}>
-        Edit
-        </Link>
-  )}
-  </div>
-  );
- 
+        </div>
+    );
 }
 
-export default BlogCard
+export default BlogCard;

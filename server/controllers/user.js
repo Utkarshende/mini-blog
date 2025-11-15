@@ -20,7 +20,7 @@ const postSignup= async (req, res)=>{
  if(namevaildationRegex.test(name)===false){
     return res.status(400).json({
         success:false,
-        message:"Name must be 2-30 characters long and contain only letters and spaces"
+        message:"Name must be 2-30 characters long and contain only letters spaces and special characters"
     }); 
  }
     if(emailValidationRegex.test(email)===false){     
@@ -44,9 +44,10 @@ if(existingUser){
     });
 }
 
-const newUser= new User ({name, email, password: md5(password)}).select("-password");
-
+const newUser= new User ({name, email, password: md5(password)});
 const savedUser = await newUser.save();
+const userResponse = savedUser.toObject();
+delete userResponse.password;
 
 res.json({
     success:true,
