@@ -1,6 +1,6 @@
 import React, {useState, useEffect } from 'react'
 import { getCurrentUser } from '../util';
-import { Link } from 'react-router-dom'; 
+import { Link } from 'react-router'; 
 
 function Navbar() {
     const [user, setUser] = useState(null);
@@ -33,7 +33,6 @@ function Navbar() {
                         className="cursor-pointer hover:text-red-400 transition-colors"
                         onClick={()=>{
                             localStorage.clear();
-                            // Use window.location.href to fully refresh the app state
                             window.location.href = "/login"; 
                         }}>
                         Logout ({user.name})
