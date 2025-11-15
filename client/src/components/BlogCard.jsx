@@ -6,7 +6,6 @@ function BlogCard({
     author,
     publishedAt,
     updatedAt,
-    // Note: status prop is important for the read/edit decision
     status, 
     category,
     slug,
@@ -15,7 +14,6 @@ function BlogCard({
     return (
         <div className='border p-4 my-4 rounded-md relative shadow-md hover:shadow-lg transition-shadow'> 
             <h2 className='text-xl font-bold mb-2'>
-                {/* Display status for non-published blogs (Draft/Archived) */}
                 {status !== "published" ? (
                     <span className='mr-2 text-sm text-red-500 bg-red-100 px-2 py-1 rounded-full font-semibold'>
                         {status.toUpperCase()}
@@ -24,7 +22,6 @@ function BlogCard({
                 {title}
             </h2>
             
-            {/* Author Info */}
             <div className='flex items-center gap-4 my-2'>
                 <div className='flex items-center text-xl font-semibold justify-center bg-orange-500 w-[40px] h-[40px] text-white rounded-full' >
                     {author.name.substring(0, 1)}
@@ -35,20 +32,15 @@ function BlogCard({
                 </div>
             </div>
             
-            {/* Metadata */}
             <p className='text-sm mt-2 text-gray-600'>
-                {/* Use publishedAt if available, otherwise updatedAt */}
                 Published On: {new Date(publishedAt || updatedAt).toLocaleString()},
                 Read By: {viewCount}
             </p>
-
-            {/* Category Badge (Position adjusted for better flow) */}
             <span className='absolute top-4 right-4 bg-gray-200 px-3 py-1
             rounded-md text-gray-700 text-xs font-semibold'>   
                 {category}
             </span>
             
-            {/* Action Link (Read More / Edit) */}
             <div className='mt-4 pt-2 border-t border-gray-100'>
                 {status === "published" ? (
                     <Link 

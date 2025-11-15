@@ -1,7 +1,8 @@
-import { Link } from 'react-router'; // Assuming react-router-dom
+import { Link } from 'react-router';
 import { useState } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar.jsx';
+import toast, { Toaster } from 'react-hot-toast'; // Import Toast
 
 function Login() {
     const [user, setUser] = useState({
@@ -13,7 +14,7 @@ function Login() {
 
     const loginUser = async () => {
         if (!user.email || !user.password) {
-            alert("Email and Password are required.");
+            toast.error("Email and Password are required.");
             return;
         }
 
@@ -21,24 +22,25 @@ function Login() {
             const response = await axios.post(`${API_URL}/login`, user);
             
             if (response?.data?.success) {
-                // ⭐ Store user and token
                 localStorage.setItem("loggedInUser", JSON.stringify(response.data.user));
                 localStorage.setItem("token", response.data.token);
 
-                window.location.href = "/"; // Redirect to home
+                toast.success("Login successful! Redirecting...");
+                setTimeout(() => {
+                    window.location.href = "/"; // Redirect to home
+                }, 1000); 
             } else {
-                alert("Login failed: " + response.data.message);
+                toast.error("Login failed: " + response.data.message);
             }
         } catch (error) {
             console.error("Login API error", error);
-            // Use response message if available, otherwise generic error
-            alert(error.response?.data?.message || "An error occurred during login."); 
+            toast.error(error.response?.data?.message || "An error occurred during login."); 
         }
     };
 
     return (
         <div>
-            <Navbar/> {/* ⭐ Added Navbar */}
+            <Navbar/> 
             <div className='max-w-[400px] mx-auto border border-gray-300
             py-10 px-14 rounded shadow-lg mt-10'>
                 <h1 className='text-center text-3xl font-bold my-4'>Login</h1>
@@ -79,6 +81,7 @@ function Login() {
                     </p>
                 </div>
             </div>
+            <Toaster />
         </div>
     );
 }

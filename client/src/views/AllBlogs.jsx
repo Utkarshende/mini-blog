@@ -16,11 +16,6 @@ function AllBlogs() {
 
         const fetchBlogs = async () => {
             setIsLoading(true);
-
-            // ⭐ CRITICAL FIX: Always call the global /blogs endpoint for the main page.
-            // The backend (getBlogs) will automatically filter this to return ONLY published posts.
-            // If the user wants to see their drafts, they should navigate to a separate 'My Posts' view, 
-            // which would use the author query.
             const url = `${API_URL}/blogs`; 
             
             try {
@@ -34,11 +29,10 @@ function AllBlogs() {
             }
         };
 
-        fetchBlogs(); // Call fetch without passing user context
+        fetchBlogs(); 
 
     }, []); 
 
-    // --- Conditional Rendering ---
     
     if (isLoading) {
         return (
@@ -54,7 +48,6 @@ function AllBlogs() {
             <div className='container mx-auto p-4 text-center'>
                 <Navbar />
                 <div className='mt-8 text-xl text-gray-600'>
-                    {/* The message now reflects whether the global published feed is empty */}
                     No published blogs found. 
                 </div>
             </div>
