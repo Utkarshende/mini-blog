@@ -7,37 +7,36 @@ import Navbar from '../components/Navbar.jsx';
 function AllBlogs() {
     const [user, setUser] = useState(null);
     const [blogs, setBlogs] = useState([]);
-    const [isLoading, setIsLoading] = useState(true); // ⭐ Added loading state
-
-    // ⭐ Defined API_URL with a fallback for robustness
+    const [isLoading, setIsLoading] = useState(true);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-    // ⭐ Combined useEffect logic for efficiency (runs only once on mount)
     useEffect(() => {
         const loggedInUser = getCurrentUser();
         setUser(loggedInUser);
 
-        const fetchBlogs = async (currentUser) => {
+        const fetchBlogs = async () => {
             setIsLoading(true);
 
-            // Use the user ID if available, otherwise an empty string
-            const authorId = currentUser?._id || "";
-            const url = `${API_URL}/blogs?author=${authorId}`;
+            // ⭐ CRITICAL FIX: Always call the global /blogs endpoint for the main page.
+            // The backend (getBlogs) will automatically filter this to return ONLY published posts.
+            // If the user wants to see their drafts, they should navigate to a separate 'My Posts' view, 
+            // which would use the author query.
+            const url = `${API_URL}/blogs`; 
             
             try {
                 const response = await axios.get(url);
                 setBlogs(response.data.data);
             } catch (error) {
                 console.error("Error fetching blogs:", error);
-                // In a real app, you might set an error state here
+                // Handle error state
             } finally {
                 setIsLoading(false); 
             }
         };
 
-        fetchBlogs(loggedInUser);
+        fetchBlogs(); // Call fetch without passing user context
 
-    }, []); // Empty dependency array means this runs only once on mount
+    }, []); 
 
     // --- Conditional Rendering ---
     
@@ -55,7 +54,8 @@ function AllBlogs() {
             <div className='container mx-auto p-4 text-center'>
                 <Navbar />
                 <div className='mt-8 text-xl text-gray-600'>
-                    {user ? "You haven't posted any blogs yet." : "No published blogs found."}
+                    {/* The message now reflects whether the global published feed is empty */}
+                    No published blogs found. 
                 </div>
             </div>
         );
@@ -67,7 +67,6 @@ function AllBlogs() {
             <div className='container mx-auto p-4'>
                 <Navbar />
                 {
-                    // ⭐ CRITICAL FIX: Ensure the BlogCard is explicitly returned from the map function
                     blogs.map((blog) => {
                         const {
                             _id, 
@@ -81,7 +80,6 @@ function AllBlogs() {
                             viewCount
                         } = blog;
 
-                        // Explicit return is necessary when using curly braces
                         return (
                             <BlogCard 
                                 key={_id}
