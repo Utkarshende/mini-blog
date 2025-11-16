@@ -23,7 +23,6 @@ function AllBlogs() {
                 setBlogs(response.data.data);
             } catch (error) {
                 console.error("Error fetching blogs:", error);
-                // Handle error state
             } finally {
                 setIsLoading(false); 
             }

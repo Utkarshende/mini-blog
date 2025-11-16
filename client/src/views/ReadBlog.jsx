@@ -3,33 +3,29 @@ import {useState,useEffect} from "react";
 import axios from "axios";  
 import MarkdownEditor from '@uiw/react-markdown-editor';
 import Navbar from "../components/Navbar.jsx";
-import { getCurrentUser } from './../util.js'; // Needed to check auth for drafts
+import { getCurrentUser } from './../util.js'; 
 
 function ReadBlog() {
     const {slug}= useParams();
     const [blog, setBlog]= useState({});
-    const [user, setUser] = useState(getCurrentUser()); // Get current user
+    const [user, setUser] = useState(getCurrentUser()); 
 
-    // ⭐ Define API_URL once
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
     const fetchBlog= async()=>{
         try {
-            // ⭐ CRITICAL FIX: Corrected typo from /bllogs/ to /blogs/
             const response = await axios.get(`${API_URL}/blogs/${slug}`); 
             setBlog (response.data.data);
         } catch (error) {
             console.error("Error fetching blog:", error);
-            // Handle 404/403 errors appropriately here
         }
     };
 
     useEffect(()=>{
         document.documentElement.setAttribute("data-color-mode","light");
         fetchBlog();
-    },[slug]); // Depend on slug just in case
+    },[slug]); 
 
-    // Fallback for null blog object while loading
     if (!blog.title) {
         return (
             <div className="mx-auto container p-4">
@@ -47,7 +43,6 @@ function ReadBlog() {
             </h1>
             
             <p className='text-gray-500 text-sm mb-4'>
-                {/* ⭐ FIX: Use publishedAt, fallback to updatedAt */}
                 Published On: {new Date (blog.publishedAt || blog.updatedAt).toLocaleString()},
                 Read By : {blog.viewCount} people
             </p>
@@ -69,7 +64,6 @@ function ReadBlog() {
                     </div>
                 </div>
             </div>
-            {/* The Markdown content viewer */}
             <MarkdownEditor.Markdown source={blog.content} />
         </div>
     );

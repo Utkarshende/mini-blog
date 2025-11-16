@@ -14,17 +14,14 @@ function EditBlog() {
     const [user, setUser] = useState(null);
     const { slug } = useParams();
     
-    // ⭐ Define API_URL once
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-    // Function to load the blog content when the component mounts or slug changes
     const loadBlog = async () => {
         if (!slug) return;
         try {
-            // Note: The backend route should be '/blogs/:slug'
             const response = await axios.get(`${API_URL}/blogs/${slug}`);
 
-            const blogData = response?.data?.data; // Adjusted to match the backend structure (data: blog)
+            const blogData = response?.data?.data; 
 
             if (blogData) {
                 setTitle(blogData.title);
@@ -39,12 +36,10 @@ function EditBlog() {
         }
     }
 
-    // ⭐ Separate useEffect to load the blog data based on slug
     useEffect(() => {
         loadBlog();
-    }, [slug]); // Depend on slug
+    }, [slug]); 
 
-    // useEffect to set user and dark mode preference once on mount
     useEffect(() => {
         document.documentElement.setAttribute("data-color-mode", "light");
         setUser(getCurrentUser());
@@ -69,7 +64,6 @@ function EditBlog() {
                 category
             },
             {
-                // ⭐ CRITICAL FIX: Use 'headers' (plural)
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -79,7 +73,7 @@ function EditBlog() {
                 toast.success("Blog updated successfully");
                 setTimeout(() => {
                     window.location.href = "/";
-                }, 1500); // Shorter timeout for better UX
+                }, 1500); 
             }
         }
         catch (err) {
@@ -97,17 +91,14 @@ function EditBlog() {
 
             const response = await axios.patch(
                 `${API_URL}/blogs/${slug}/publish`,
-                // PATCH requests for status change usually don't need a body, but must carry the config object
                 {}, 
                 {
-                    // ⭐ CRITICAL FIX: Use 'headers' (plural)
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 }
             );
             
-            // ⭐ CRITICAL FIX: Check for 'success' (lowercase 's') if your backend uses that
             if (response?.data?.success) { 
                 toast.success("Blog published successfully");
                 setTimeout(() => {

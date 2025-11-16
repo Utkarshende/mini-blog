@@ -12,7 +12,6 @@ function NewBlog() {
     const [category, setCategory] = useState(BLOG_CATEGORIES[0]);
     const [user, setUser] = useState(null);
     
-    // ⭐ Define API_URL once
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
     useEffect(() => {
@@ -37,10 +36,8 @@ function NewBlog() {
                 title,
                 content,
                 category,
-                // The author is extracted from the JWT token on the backend
             },
             {
-                // Correctly sending the JWT token in the Authorization header
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -49,19 +46,16 @@ function NewBlog() {
             if (response?.data?.success) {
                 toast.success("Blog created successfully and saved as a draft!");
                 setTimeout(() => {
-                    // Redirect to My Posts page after creation
                     window.location.href = "/myposts";
                 }, 1500);
             }
         }
         catch (err) {
-            // ⭐ DEBUGGING: Log the full response to the console to see the server's error message
             console.error("API Error Response:", err.response);
             toast.error(err?.response?.data?.message || "Error creating blog. Check console for details.");
         }
     };
     
-    // ⭐ Component return is placed correctly after all functions
     return (
         <div className='container mx-auto p-4'>
             <Navbar />
@@ -70,7 +64,6 @@ function NewBlog() {
             <input 
                 type="text" 
                 placeholder='Blog Title'
-                // ⭐ Theming: Indigo focus ring
                 className='border p-2 w-full my-4 rounded focus:ring-indigo-500 focus:border-indigo-500'
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -79,7 +72,6 @@ function NewBlog() {
             <select 
                 value={category} 
                 onChange={(e) => setCategory(e.target.value)} 
-                // ⭐ Theming: Indigo focus ring
                 className="border p-2 my-4 rounded focus:ring-indigo-500 focus:border-indigo-500"
             >
                 {BLOG_CATEGORIES.map((cate) => (
@@ -98,7 +90,6 @@ function NewBlog() {
             </div>
             
             <button 
-                // ⭐ Theming: Indigo button
                 className='bg-indigo-600 text-white px-6 py-2 mt-4 rounded cursor-pointer hover:bg-indigo-700 transition-colors shadow-md' 
                 type='button'
                 onClick={saveBlog}

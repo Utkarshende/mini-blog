@@ -1,12 +1,11 @@
 import Blog from "./../models/Blog.js";
 import jwt from 'jsonwebtoken'; 
-import mongoose from 'mongoose'; // Added for checking valid object IDs
+import mongoose from 'mongoose'; 
 
 const postBlogs = async (req, res) => {
     try {
         const {title, content, category} = req.body;
         
-        // Auth Middleware is assumed to run before this, populating req.user
         const {user} = req; 
 
         if (!user || !user.id) {
@@ -28,15 +27,13 @@ const postBlogs = async (req, res) => {
             content,
             category,
             author: user.id, 
-            // Create a temporary slug before saving to ensure uniqueness for initial save
             slug:`temp-slug-${Date.now()}-${Math.random().toString()}`,
-            status: 'draft' // Default to draft, as per Blog.js model
+            status: 'draft' 
         });
         
         const savedBlog = await newBlog.save();
 
-        // Generate permanent SEO-friendly slug using the title and the assigned _id
-        // Replace spaces with hyphens, remove non-word characters, and append ID
+ 
         savedBlog.slug = `${title.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,"")}-${savedBlog._id}`;
 
         await savedBlog.save();
@@ -44,7 +41,7 @@ const postBlogs = async (req, res) => {
         res.status(201).json({
             success:true,
             message:"Blog created successfully",
-            data:savedBlog // Changed 'blog' to 'data' for consistency
+            data:savedBlog 
         });
 
     } catch (error) {
@@ -63,28 +60,22 @@ const getBlogs = async (req, res) => {
 
         let query = {};
 
-        // ⭐ CRITICAL FIX: Correct query logic
         if (author) {
-            // Check if the provided author ID is a valid MongoDB ObjectId
             if (!mongoose.Types.ObjectId.isValid(author)) {
                 return res.status(400).json({
                     success: false,
                     message: "Invalid author ID format."
                 });
             }
-            // If author ID is provided, fetch ALL of that author's blogs 
-            // (published, draft, archived) for the 'My Blogs' view on the frontend
+           
             query.author = author;
         } else {
-            // If no author ID is provided (global feed), fetch ONLY published blogs
             query.status = "published";
         }
 
-        // Removed the unnecessary 'conditions' array and fixed the find() call
         const blogs = await Blog.find(query)
         .populate('author', '_id name email')
-        .sort({ publishedAt: -1, createdAt: -1 }); // Prioritize publishedAt, then createdAt
-        
+        .sort({ publishedAt: -1, createdAt: -1 }); 
         res.status(200).json({
             success:true,
             data:blogs,
@@ -104,9 +95,7 @@ const getBlogs = async (req, res) => {
 const getBlogForSlug = async (req, res) => {
     try {
         const {slug} = req.params;
-        const {user} = req; // Logged-in user from auth middleware
-
-        // Populate author field for security check and display
+        const {user} = req; 
         const blog = await Blog.findOne({slug:slug}).populate('author','_id name email');
 
         if (!blog){
@@ -116,7 +105,6 @@ const getBlogForSlug = async (req, res) => {
             });
         }
         
-        // SECURITY CHECK:
         const isAuthor = user && blog.author._id.toString() === user.id;
 
         if (blog.status !== 'published' && !isAuthor) {
@@ -125,14 +113,11 @@ const getBlogForSlug = async (req, res) => {
                 message: "You are not authorized to view this content."
             });
         }
-        
-        // ⭐ FEATURE ADDITION: Increment viewCount if the blog is published and the viewer is NOT the author
-        // This prevents the author's own edits/views from constantly inflating the count.
+    
         if (blog.status === 'published' && (!user || blog.author._id.toString() !== user.id)) {
              await Blog.updateOne({ slug: slug }, { $inc: { viewCount: 1 } });
-             // Mongoose doesn't return the updated doc with updateOne by default, 
-             // but we don't need it here since we already have the blog data.
-             blog.viewCount += 1; // Increment the local object for the response
+            
+             blog.viewCount += 1; 
         }
 
         res.status(200).json({
@@ -172,7 +157,6 @@ const patchPublishBlog = async(req, res)=>{
             });
         }
 
-        // Check if the authenticated user is the author of the blog
         if(blog.author.toString() !== user.id){
             return res.status(403).json({
                 success:false,
@@ -180,7 +164,6 @@ const patchPublishBlog = async(req, res)=>{
             });
         }
 
-        // Check if the blog already has a title/content before publishing
         if (!blog.title || !blog.content || !blog.category) {
             return res.status(400).json({
                 success: false,
@@ -190,7 +173,7 @@ const patchPublishBlog = async(req, res)=>{
 
         const updatedBlog = await Blog.findOneAndUpdate(
             { slug: slug },
-            { status: "published", publishedAt: new Date() }, // Set publishedAt on publish
+            { status: "published", publishedAt: new Date() }, 
             { new: true }
         );
 
@@ -232,7 +215,6 @@ const putBlogs = async (req, res) => {
             });
         }
 
-        // Check if the authenticated user is the author of the blog
         if (existingBlog.author.toString() !== user.id) {
             return res.status(403).json({
                 success: false,
@@ -247,7 +229,6 @@ const putBlogs = async (req, res) => {
             });
         }
         
-        // Prevent accidental slug changes during update
         const updatedBlog = await Blog.findOneAndUpdate(
             { slug: slug }, 
             { title, category, content, updatedAt: new Date() },
@@ -257,7 +238,7 @@ const putBlogs = async (req, res) => {
         return res.status(200).json({
             success: true,
             message : "Blog Updated Successfully",
-            data : updatedBlog, // Changed 'blog' to 'data' for consistency
+            data : updatedBlog, 
         });
 
     } catch (error) {
