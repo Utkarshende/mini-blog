@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { useState } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar.jsx';
-import toast, { Toaster } from 'react-hot-toast'; // Import Toast
+import toast, { Toaster } from 'react-hot-toast'; 
 
 function Login() {
     const [user, setUser] = useState({
@@ -27,7 +27,7 @@ function Login() {
 
                 toast.success("Login successful! Redirecting...");
                 setTimeout(() => {
-                    window.location.href = "/"; // Redirect to home
+                    window.location.href = "/"; 
                 }, 1000); 
             } else {
                 toast.error("Login failed: " + response.data.message);

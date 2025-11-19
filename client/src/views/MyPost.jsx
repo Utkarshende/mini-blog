@@ -36,7 +36,6 @@ function MyPost() {
                     }
                 });
                 
-                // Assuming the API returns a list of blogs/drafts
                 setBlogs(response.data.data); 
             } catch (error) {
                 console.error("Error fetching user's blogs:", error);
