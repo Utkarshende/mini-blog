@@ -46,7 +46,7 @@ function NewBlog() {
             if (response?.data?.success) {
                 toast.success("Blog created successfully and saved as a draft!");
                 setTimeout(() => {
-                    window.location.href = "/myposts";
+                    window.location.href = "/blogs/myposts";
                 }, 1500);
             }
         }

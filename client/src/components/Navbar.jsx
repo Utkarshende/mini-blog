@@ -21,8 +21,11 @@ function Navbar() {
                         <Link to="/new" className="hover:text-indigo-200 transition-colors">
                             New Blog
                         </Link>
-                        <Link to="/myposts" className="hover:text-indigo-200 transition-colors">
+                        <Link to="/blogs/myposts" className="hover:text-indigo-200 transition-colors">
                             My Posts
+                        </Link>
+                        <Link to="/blogcard" className="hover:text-indigo-200 transition-colors">
+                           Blog Card
                         </Link>
                     </>
                 )}

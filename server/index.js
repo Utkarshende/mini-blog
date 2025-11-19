@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+// Import getMyPosts along with other blog controllers if using separate files.
+// Since the current file includes controller logic, we will define getMyPosts here.
 import { postSignup ,postLogin,} from "./controllers/user.js";
 import { postBlogs, getBlogs, getBlogForSlug, patchPublishBlog,putBlogs} from "./controllers/blog.js";
 import jwt from 'jsonwebtoken';
@@ -13,8 +15,6 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-
-// Removed 'requestCount' as it's not currently used.
 
 const connectDB = async () => {
     try {
@@ -34,9 +34,7 @@ res.json({
 }) ;
 
 /**
- * FIX 1: Corrected header access from req.header.authorization to req.headers.authorization.
- * In Express, headers are accessed via the req.headers (plural) object.
- * Fix 2: Changed status code for missing auth to 401 (Unauthorized) from 400 (Bad Request).
+ * Middleware to check for a valid JWT token and attach decoded user data to req.user.
  */
 const jwtCheck = (req, res, next)=>{
     req.user=null;
@@ -57,6 +55,7 @@ const jwtCheck = (req, res, next)=>{
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // decoded object typically contains { _id: user_id, email: user_email, iat, exp }
         req.user = decoded;
         next();
     } catch(error){
@@ -64,6 +63,9 @@ const jwtCheck = (req, res, next)=>{
     }
 };
 
+/**
+ * Middleware to increment the view count for a specific blog slug.
+ */
 const increasedViewCount =async (req, res, next )=>{
 const {slug} = req.params;
 
@@ -77,15 +79,54 @@ catch (error){
     // This middleware should not stop the request chain on error, 
     // but should log the error and call next().
     console.error("Error increasing view count", error);
- 
 }
 next();
 };
 
+// --- NEW CONTROLLER FUNCTION ADDED HERE ---
+/**
+ * Controller function to fetch all blogs owned by the authenticated user.
+ * Requires jwtCheck middleware to ensure req.user is set.
+ */
+const getMyPosts = async (req, res) => {
+    try {
+        // req.user contains the decoded JWT payload (e.g., { _id: 'user_id', ... })
+        const userId = req.user._id; 
+
+        if (!userId) {
+             return res.status(401).json({ 
+                success: false, 
+                message: "User ID not found in token." 
+            });
+        }
+
+        // Find all blogs where the 'author' field matches the authenticated user's ID.
+        // Sort by the latest update time (most recently edited/created).
+        const myPosts = await Blog.find({ author: userId })
+            .sort({ updatedAt: -1 })
+            // If the Blog schema references User, use .populate() here if needed:
+            // .populate('author', 'name email') 
+
+        return res.status(200).json({
+            success: true,
+            data: myPosts,
+            message: "User-specific posts fetched successfully."
+        });
+
+    } catch (error) {
+        console.error("Error fetching user's blogs:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while fetching user posts."
+        });
+    }
+};
+
 app.post("/signup",postSignup);
 app.post("/login",postLogin);
+
 app.get("/blogs",getBlogs);
-// FIX 3: Route parameter syntax requires a colon. The original was missing it.
+app.get("/blogs/myposts", jwtCheck, getMyPosts); 
 app.get("/blogs/:slug",increasedViewCount,getBlogForSlug); 
 app.post("/blogs",jwtCheck,postBlogs);
 app.patch("/blogs/:slug/publish",jwtCheck,patchPublishBlog);
