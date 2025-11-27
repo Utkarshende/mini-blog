@@ -1,6 +1,6 @@
 import MarkdownEditor from '@uiw/react-markdown-editor';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { BLOG_CATEGORIES } from './../CONSTANTS.jsx';
 import { getCurrentUser } from './../util.js';
@@ -12,52 +12,91 @@ function EditBlog() {
     const [title, setTitle] = useState("");
     const [category, setCategory] = useState(BLOG_CATEGORIES[0]);
     const [user, setUser] = useState(null);
+    const [originalAuthorId, setOriginalAuthorId] = useState(null); // State to store the author's ID
     const { slug } = useParams();
     
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-    const loadBlog = async () => {
-        if (!slug) return;
-        try {
-            const response = await axios.get(`${API_URL}/blogs/${slug}`);
-
-            const blogData = response?.data?.data; 
-
-            if (blogData) {
-                setTitle(blogData.title);
-                setContent(blogData.content);
-                setCategory(blogData.category);
-            } else {
-                toast.error("Blog data not found.");
-            }
-        } catch (err) {
-            console.error("Error loading blog:", err);
-            toast.error(err?.response?.data?.message || "Error loading blog for edit.");
+    
+    // Utility function to get the current token
+    const getToken = () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            toast.error("Please log in to perform this action.");
         }
+        return token;
     }
 
-    useEffect(() => {
-        loadBlog();
-    }, [slug]); 
+    // Load the blog data
+    const loadBlog = useCallback(async (currentUser) => {
+        if (!slug || !currentUser) return;
 
+        try {
+            // Fetch the blog data
+            const response = await axios.get(`${API_URL}/blogs/${slug}`);
+            const blogData = response?.data?.data; 
+
+            if (!blogData) {
+                toast.error("Blog data not found.");
+                return;
+            }
+
+            // 🛑 SECURITY CHECK: Ensure current user is the author
+            if (blogData.author._id !== currentUser.id) {
+                toast.error("You are not authorized to edit this blog.");
+                window.location.href = "/"; // Redirect unauthorized user
+                return;
+            }
+
+            // Set state only after passing the security check
+            setTitle(blogData.title);
+            setContent(blogData.content);
+            setCategory(blogData.category);
+            setOriginalAuthorId(blogData.author._id); // Store the author ID
+
+        } catch (err) {
+            console.error("Error loading blog:", err);
+            // Handle 404/not found errors gracefully
+            if (err?.response?.status === 404) {
+                 toast.error("Blog not found.");
+            } else {
+                 toast.error(err?.response?.data?.message || "Error loading blog for edit.");
+            }
+            // Optional: Redirect home on failure
+            // setTimeout(() => window.location.href = "/", 1500); 
+        }
+    }, [slug, API_URL]);
+
+    // 1. Load current user and set color mode on mount
     useEffect(() => {
         document.documentElement.setAttribute("data-color-mode", "light");
-        setUser(getCurrentUser());
+        const currentUser = getCurrentUser();
+        setUser(currentUser);
+
+        if (!currentUser) {
+            toast.error("Please log in to edit a blog.");
+            window.location.href = "/login"; // Force login if not logged in
+        }
     }, []);
 
+    // 2. Load blog data only after user state is set
+    useEffect(() => {
+        if (user) {
+            loadBlog(user);
+        }
+    }, [user, loadBlog]);
+
+
+    // Update Blog (PUT)
     const updateBlog = async () => {
         if (!title || !content || !category) {
             toast.error("All fields are required.");
             return;
         }
         
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                toast.error("Please log in to update a blog.");
-                return;
-            }
+        const token = getToken();
+        if (!token) return;
 
+        try {
             const response = await axios.put(`${API_URL}/blogs/${slug}`, {
                 title,
                 content,
@@ -70,9 +109,13 @@ function EditBlog() {
             });
 
             if (response?.data?.success) {
+                // 🔑 Optional: Set a flag to refresh MyPost page if you redirect there
+                // localStorage.setItem('blogsUpdated', 'true'); 
+                
                 toast.success("Blog updated successfully");
                 setTimeout(() => {
-                    window.location.href = "/";
+                    // Consider redirecting to the single blog view page instead of home
+                    window.location.href = `/blog/${slug}`; 
                 }, 1500); 
             }
         }
@@ -81,17 +124,15 @@ function EditBlog() {
         }
     };
 
+    // Publish Blog (PATCH)
     const publishBlog = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                toast.error("Please log in to publish a blog.");
-                return;
-            }
+        const token = getToken();
+        if (!token) return;
 
+        try {
             const response = await axios.patch(
                 `${API_URL}/blogs/${slug}/publish`,
-                {}, 
+                {}, // Empty body for a PATCH status update
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -102,7 +143,7 @@ function EditBlog() {
             if (response?.data?.success) { 
                 toast.success("Blog published successfully");
                 setTimeout(() => {
-                    window.location.href = "/";
+                    window.location.href = `/blog/${slug}`;
                 }, 1500);
             }
         }
@@ -110,6 +151,17 @@ function EditBlog() {
             toast.error(err?.response?.data?.message || "Error publishing blog");
         }
     };
+
+    // Optionally show a loading indicator if needed
+    if (!user || !title) {
+        return (
+            <div className='container mx-auto p-4 text-center'>
+                <Navbar />
+                <div className='mt-8 text-xl text-gray-600'>Loading edit form...</div>
+            </div>
+        );
+    }
+
 
     return (
         <div className='container mx-auto p-4'>
