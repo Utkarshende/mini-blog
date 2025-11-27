@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import BlogCard from '../components/BlogCard.jsx';
 import Navbar from '../components/Navbar.jsx';
@@ -11,6 +11,45 @@ function MyPost() {
     const [isLoading, setIsLoading] = useState(true);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+    // 1. Define the fetch function outside of useEffect using useCallback
+    const fetchMyBlogs = useCallback(async (shouldForceRefresh) => {
+        setIsLoading(true);
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+            setIsLoading(false);
+            // Optional: Show error if user is loggedIn but token is missing
+            if (getCurrentUser()) {
+                 toast.error("Authentication token missing. Please log in again.");
+            }
+            return;
+        }
+
+        try {
+            const url = `${API_URL}/blogs/myposts`; 
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            
+            setBlogs(response.data.data); 
+        } catch (error) {
+            console.error("Error fetching user's blogs:", error);
+            // Handle 401 Unauthorized explicitly
+            if (error.response?.status === 401) {
+                toast.error("Session expired. Please log in.");
+                // Optional: Force logout and redirect
+                // window.location.href = "/login";
+            } else {
+                 toast.error(error.response?.data?.message || "Failed to load your posts.");
+            }
+            setBlogs([]); // Ensure UI shows empty state on failure
+        } finally {
+            setIsLoading(false); 
+        }
+    }, [API_URL]); // dependency on API_URL is technically needed but often safe to omit
+
     useEffect(() => {
         const loggedInUser = getCurrentUser();
         setUser(loggedInUser);
@@ -20,34 +59,21 @@ function MyPost() {
             return;
         }
 
-        const fetchMyBlogs = async () => {
-            setIsLoading(true);
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setIsLoading(false);
-                return;
-            }
+        // --- 🔑 FIX: Auto-Refresh Logic using Local Storage Flag ---
+        const shouldRefresh = localStorage.getItem('blogsUpdated');
 
-            try {
-                const url = `${API_URL}/blogs/myposts`; 
-                const response = await axios.get(url, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                
-                setBlogs(response.data.data); 
-            } catch (error) {
-                console.error("Error fetching user's blogs:", error);
-                toast.error(error.response?.data?.message || "Failed to load your posts.");
-            } finally {
-                setIsLoading(false); 
-            }
-        };
+        if (shouldRefresh === 'true') {
+            // 1. Clear the flag 
+            localStorage.removeItem('blogsUpdated');
+            // 2. Force a re-fetch immediately
+            fetchMyBlogs(true); 
+        } else {
+            // 3. Regular initial fetch
+            fetchMyBlogs(false); 
+        }
+        // --- End Fix ---
 
-        fetchMyBlogs(); 
-
-    }, []); 
+    }, [fetchMyBlogs]); // Dependency on fetchMyBlogs is correct due to useCallback
 
     if (isLoading) {
         return (
