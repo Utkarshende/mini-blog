@@ -9,7 +9,7 @@ function AllBlogs() {
     const [blogs, setBlogs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
+    
     useEffect(() => {
         const loggedInUser = getCurrentUser();
         setUser(loggedInUser);
@@ -63,26 +63,27 @@ function AllBlogs() {
                         const {
                             _id, 
                             title, 
-                            content, 
                             author, 
                             category, 
                             slug, 
                             updatedAt,
                             publishedAt,
-                            viewCount
+                            viewCount,
+                            status='published'
                         } = blog;
 
                         return (
                             <BlogCard 
                                 key={_id}
                                 title={title}
-                                content={content}
                                 author={author}
                                 category={category}
                                 slug={slug}
                                 updatedAt={updatedAt}
                                 publishedAt={publishedAt}
                                 viewCount={viewCount}
+                                status={status}
+                                
                             />
                         );
                     })

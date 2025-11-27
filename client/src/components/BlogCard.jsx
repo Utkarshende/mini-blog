@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router'; 
+import Blog from '../../../server/models/Blog';
 
 const safeDateFormatter = (dateInput, options = { year: 'numeric', month: 'short', day: 'numeric' }) => {
     if (!dateInput) {
