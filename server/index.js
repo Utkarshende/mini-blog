@@ -21,6 +21,7 @@ app.use("/api/blogs", blogRoutes);
 // healthcheck
 app.get("/", (req, res) => res.json({ success: true, message: "Server up" }));
 
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err);
