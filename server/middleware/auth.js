@@ -11,8 +11,8 @@ export const jwtCheck = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     // keep decoded fields consistent: { id, email, name }
     req.user = decoded;
-    return next();
-  } catch (err) {
+     next();
+  } catch (error) {
     return res.status(401).json({ success:false, message: "Invalid or expired JWT token" });
   }
 };
