@@ -1,254 +1,123 @@
-import Blog from "./../models/Blog.js";
-import jwt from 'jsonwebtoken'; 
-import mongoose from 'mongoose'; 
+import Blog from "../models/Blog.js";
+import mongoose from "mongoose";
 
-const postBlogs = async (req, res) => {
-    try {
-        const {title, content, category} = req.body;
-        
-        const {user} = req; 
+export const postBlogs = async (req, res) => {
+  const { title, content, category } = req.body;
+  const user = req.user;
+  const userId = user._id || user.userId; // FIX
 
-        if (!user || !user.id) {
-            return res.status(401).json({
-                success: false,
-                message: "Authentication required."
-            });
-        }
+  if (!userId) return res.status(401).json({ success:false, message: "Authentication required" });
+  if (!title || !content || !category)
+    return res.status(400).json({ success:false, message: "All fields required" });
 
-        if (!title || !content || !category ){
-            return res.status(400).json({
-                success:false,
-                message:"All fields (title, content, category) are required"
-            });
-        }
+  const newBlog = new Blog({
+    title,
+    content,
+    category,
+    author: userId, // FIX
+    slug: `temp-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+    status: "draft"
+  });
 
-        const newBlog = new Blog({
-            title,
-            content,
-            category,
-            author: user.id, 
-            slug:`temp-slug-${Date.now()}-${Math.random().toString()}`,
-            status: 'draft' 
-        });
-        
-        const savedBlog = await newBlog.save();
+  const saved = await newBlog.save();
+  saved.slug = `${title.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^\w-]+/g,"")}-${saved._id}`;
+  await saved.save();
 
- 
-        savedBlog.slug = `${title.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,"")}-${savedBlog._id}`;
-
-        await savedBlog.save();
-        
-        res.status(201).json({
-            success:true,
-            message:"Blog created successfully",
-            data:savedBlog 
-        });
-
-    } catch (error) {
-        console.error("Error posting blog:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error during blog creation.",
-            error: error.message
-        });
-    }
+  return res.status(201).json({ success:true, message:"Blog created", data: saved });
 };
 
-const getBlogs = async (req, res) => {
-    try {
-        const { author } = req.query;
+export const getBlogs = async (req, res) => {
+  const { author } = req.query;
+  const query = {};
 
-        let query = {};
+  if (author) {
+    if (!mongoose.Types.ObjectId.isValid(author))
+      return res.status(400).json({ success:false, message: "Invalid author id" });
+    query.author = author;
+  } else {
+    query.status = "published";
+  }
 
-        if (author) {
-            if (!mongoose.Types.ObjectId.isValid(author)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid author ID format."
-                });
-            }
-           
-            query.author = author;
-        } else {
-            query.status = "published";
-        }
+  const blogs = await Blog.find(query)
+    .populate("author", "_id name email")
+    .sort({ publishedAt: -1, createdAt: -1 });
 
-        const blogs = await Blog.find(query)
-        .populate('author', '_id name email')
-        .sort({ publishedAt: -1, createdAt: -1 }); 
-        res.status(200).json({
-            success:true,
-            data:blogs,
-            message:"Blogs fetched successfully"
-        });
-
-    } catch (error) {
-        console.error("Error fetching blogs:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error during blog retrieval.",
-            error: error.message
-        });
-    }
+  return res.json({ success:true, data: blogs });
 };
 
-const getBlogForSlug = async (req, res) => {
-    try {
-        const {slug} = req.params;
-        const {user} = req; 
-        const blog = await Blog.findOne({slug:slug}).populate('author','_id name email');
+export const getBlogForSlug = async (req, res) => {
+  const { slug } = req.params;
+  const user = req.user;
+  const userId = user?._id || user?.userId; // FIX
 
-        if (!blog){
-            return res.status(404).json({
-                success:false,
-                message:"Blog not found"
-            });
-        }
-        
-        const isAuthor = user && blog.author._id.toString() === user.id;
+  const blog = await Blog.findOne({ slug }).populate("author", "_id name email");
+  if (!blog) return res.status(404).json({ success:false, message: "Blog not found" });
 
-        if (blog.status !== 'published' && !isAuthor) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not authorized to view this content."
-            });
-        }
-    
-        if (blog.status === 'published' && (!user || blog.author._id.toString() !== user.id)) {
-             await Blog.updateOne({ slug: slug }, { $inc: { viewCount: 1 } });
-            
-             blog.viewCount += 1; 
-        }
+  const isAuthor = userId && blog.author._id.toString() === userId;
 
-        res.status(200).json({
-            success:true,
-            data:blog,
-            message:"Blog fetched successfully"
-        });
+  if (blog.status !== "published" && !isAuthor)
+    return res.status(403).json({ success:false, message: "You are not authorized to view this content" });
 
-    } catch (error) {
-        console.error("Error fetching single blog:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error during single blog retrieval.",
-            error: error.message
-        });
-    }
+  if (blog.status === "published" && !isAuthor) {
+    await Blog.updateOne({ slug }, { $inc: { viewCount: 1 } });
+    blog.viewCount++;
+  }
+
+  return res.json({ success:true, data: blog });
 };
 
-const patchPublishBlog = async(req, res)=>{
-    try {
-        const {slug} = req.params;
-        const {user} = req;
+export const patchPublishBlog = async (req, res) => {
+  const { slug } = req.params;
+  const userId = req.user._id || req.user.userId; // FIX
 
-        if (!user || !user.id) {
-            return res.status(401).json({
-                success: false,
-                message: "Authentication required."
-            });
-        }
+  if (!userId) return res.status(401).json({ success:false, message: "Authentication required" });
 
-        const blog = await Blog.findOne({slug : slug});
+  const blog = await Blog.findOne({ slug });
+  if (!blog) return res.status(404).json({ success:false, message: "Blog not found" });
+  if (blog.author.toString() !== userId)
+    return res.status(403).json({ success:false, message: "Not authorized to publish" });
 
-        if(!blog){
-            return res.status(404).json({
-                success:false,
-                message:"Blog not found"
-            });
-        }
+  if (!blog.title || !blog.content || !blog.category)
+    return res.status(400).json({ success:false, message: "Cannot publish incomplete blog" });
 
-        if(blog.author.toString() !== user.id){
-            return res.status(403).json({
-                success:false,
-                message : "You are not authorized to publish this blog"
-            });
-        }
+  blog.status = "published";
+  blog.publishedAt = new Date();
+  await blog.save();
 
-        if (!blog.title || !blog.content || !blog.category) {
-            return res.status(400).json({
-                success: false,
-                message: "Cannot publish a blog without a title, content, or category."
-            });
-        }
-
-        const updatedBlog = await Blog.findOneAndUpdate(
-            { slug: slug },
-            { status: "published", publishedAt: new Date() }, 
-            { new: true }
-        );
-
-        res.status(200).json({
-            success:true,
-            message :"Blog Published Successfully !",
-            data: updatedBlog
-        });
-
-    } catch (error) {
-        console.error("Error publishing blog:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error during blog publishing.",
-            error: error.message
-        });
-    }
+  return res.json({ success:true, message: "Blog published", data: blog });
 };
 
-const putBlogs = async (req, res) => {
-    try {
-        const {slug} = req.params;
-        const {title, category, content} = req.body;
-        const {user} = req;
+export const putBlogs = async (req, res) => {
+  const { slug } = req.params;
+  const { title, category, content } = req.body;
+  const userId = req.user._id || req.user.userId; // FIX
 
-        if (!user || !user.id) {
-            return res.status(401).json({
-                success: false,
-                message: "Authentication required."
-            });
-        }
+  if (!userId) return res.status(401).json({ success:false, message: "Authentication required" });
 
-        const existingBlog = await Blog.findOne({slug : slug});
+  const blog = await Blog.findOne({ slug });
+  if (!blog) return res.status(404).json({ success:false, message: "Blog not found" });
+  if (blog.author.toString() !== userId)
+    return res.status(403).json({ success:false, message: "Not authorized to edit" });
 
-        if (!existingBlog) {
-            return res.status(404).json({
-                success: false,
-                message: "Blog not found"
-            });
-        }
+  if (!title || !category || !content)
+    return res.status(400).json({ success:false, message: "All fields are required" });
 
-        if (existingBlog.author.toString() !== user.id) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not authorized to update this blog"
-            });
-        }
+  blog.title = title;
+  blog.category = category;
+  blog.content = content;
+  blog.updatedAt = new Date();
+  await blog.save();
 
-        if (!title || !category || !content) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields (title, content, category) are required"
-            });
-        }
-        
-        const updatedBlog = await Blog.findOneAndUpdate(
-            { slug: slug }, 
-            { title, category, content, updatedAt: new Date() },
-            { new: true }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message : "Blog Updated Successfully",
-            data : updatedBlog, 
-        });
-
-    } catch (error) {
-        console.error("Error updating blog:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error during blog update.",
-            error: error.message
-        });
-    }
+  return res.json({ success:true, message: "Blog updated", data: blog });
 };
 
-export { postBlogs, getBlogs, getBlogForSlug ,patchPublishBlog, putBlogs};
+export const getMyPosts = async (req, res) => {
+  const userId = req.user._id || req.user.userId; // FIX
+  if (!userId) return res.status(401).json({ success:false, message: "Authentication required" });
+
+  const myBlogs = await Blog.find({ author: userId })
+    .populate("author", "_id name email")
+    .sort({ createdAt: -1 });
+
+  return res.json({ success:true, data: myBlogs });
+};
