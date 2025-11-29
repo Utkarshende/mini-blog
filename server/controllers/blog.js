@@ -5,13 +5,9 @@ import mongoose from 'mongoose';
 const postBlogs = async (req, res) => {
     try {
         const {title, content, category} = req.body;
-        
-        // The auth middleware attaches the decoded JWT payload to req.user.
-        // The payload contains { id: user.id, ... }
         const {user} = req; 
 
         if (!user || !user._id) {
-            // This error should now only occur if the middleware fails or is missing
             return res.status(401).json({
                 success: false,
                 message: "Authentication required."
