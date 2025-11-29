@@ -16,16 +16,15 @@ const safeDateFormatter = (dateInput, options = { year: 'numeric', month: 'short
 };
 
 function BlogCard({
-    title,
-    author,
-    publishedAt,
-    updatedAt,
-    status,
-    category,
-    slug,
-    // Add default value assignment for viewCount
-    viewCount = 0, // <--- FIX 1: Provide a default value
-    description
+     _id, 
+                     title, 
+                            author, 
+                            category, 
+                            slug, 
+                            updatedAt,
+                            publishedAt,
+                            viewCount,
+                            status
 }) {
     const safeStatus = status || 'draft'; 
     const isPublished = safeStatus === 'published';

@@ -25,7 +25,8 @@ export const postSignup = async (req, res) => {
   const userObj = saved.toObject();
   delete userObj.password;
 
-  return res.status(201).json({ success: true, message: "User registered", user: userObj });
+  return res.status(201).json
+  ({ success: true, message: "User registered", user: userObj });
 };
 
 export const postLogin = async (req, res) => {
@@ -38,7 +39,7 @@ export const postLogin = async (req, res) => {
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.status(401).json({ success:false, message: "Invalid credentials" });
 
-  const token = jwt.sign({ id: user._id.toString(), email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: "1d" });
+  const token = jwt.sign({ _id: user._id.toString(), email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: "1d" });
   const userObj = user.toObject();
   delete userObj.password;
 

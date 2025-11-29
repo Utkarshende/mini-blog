@@ -22,8 +22,9 @@ function Login() {
             const response = await axios.post(`${API_URL}/login`, user);
             
             if (response?.data?.success) {
-                localStorage.setItem("loggedInUser", JSON.stringify(response.data.user));
                 localStorage.setItem("token", response.data.token);
+                localStorage.setItem("loggedInUser", JSON.stringify(response.data.user));
+                
 
                 toast.success("Login successful! Redirecting...");
                 setTimeout(() => {
