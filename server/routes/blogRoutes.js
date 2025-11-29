@@ -7,7 +7,7 @@ import {
     putBlogs, 
     getMyPosts
 } from "../controllers/blog.js";
-import jwtCheck from "../middleware/auth.js";
+import {jwtCheck} from "../middleware/auth.js";
 
 const router = express.Router();
 
