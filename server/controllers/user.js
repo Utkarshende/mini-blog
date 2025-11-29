@@ -43,5 +43,9 @@ export const postLogin = async (req, res) => {
   const userObj = user.toObject();
   delete userObj.password;
 
-  return res.json({ success: true, message: "Logged in", user: userObj, token });
+  return res.json({ success: true, message: "Logged in", 
+    
+     success: true,
+  token: accessToken, // <-- MUST BE HERE
+  user });
 };
