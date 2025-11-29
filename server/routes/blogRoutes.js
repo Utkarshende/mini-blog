@@ -11,15 +11,6 @@ import {jwtCheck} from "../middleware/auth.js";
 
 const router = express.Router();
 
-app.get("/api/test-auth", authMiddleware, (req, res) => {
-  res.json({
-    success: true,
-    message: "Auth verified",
-    user: req.user
-  });
-});
-
-
 router.get("/myposts", jwtCheck, getMyPosts);
 router.post("/", jwtCheck, postBlogs);
 router.patch("/:slug/publish", jwtCheck, patchPublishBlog);

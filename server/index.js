@@ -1,90 +1,82 @@
-import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
-import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import cors from "cors";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+
+// Controllers
+import { postSignup, postLogin } from "./controllers/user.js";
 import {
-  getBlogForSlug,
   getBlogs,
-  patchPublishBlog,
+  getBlogForSlug,
   postBlogs,
   putBlogs,
+  patchPublishBlog,
+  getMyPosts,
 } from "./controllers/blog.js";
-import { postLogin, postSignup } from "./controllers/user.js";
-import Blog from "./models/Blog.js";
-dotenv.config();
 
-const app = express();
+// Middleware
+const jwtCheck = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Authorization token missing" });
+  }
 
-app.use(express.json());
-app.use(cors());
+  const token = authHeader.split(" ")[1];
 
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // frontend expects req.user
+    next();
+  } catch (error) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Invalid or expired JWT token" });
+  }
+};
+
+// Connect to MongoDB
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URL);
-    if (conn) {
-      console.log("MongoDB connected");
-    }
+    await mongoose.connect(process.env.MONGODB_URL);
+    console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection error:", error);
   }
 };
 
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Server is up and running...",
-  });
-});
+dotenv.config();
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-const jwtCheck = (req, res, next) => {
-  req.user = null;
+// ---------------- API ROUTES ----------------
 
-  const { authorization } = req.headers;
+// Test server
+app.get("/api", (req, res) =>
+  res.json({ success: true, message: "Server is running..." })
+);
 
-  if (!authorization) {
-    return res.status(400).json({ message: "Authorization token missing" });
-  }
+// Auth routes
+app.post("/api/signup", postSignup);
+app.post("/api/login", postLogin);
 
-  try {
-    const token = authorization.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+// Blog routes
+app.get("/api/blogs", getBlogs);
+app.get("/api/blogs/:slug", getBlogForSlug);
 
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Invalid JWT Token" });
-  }
-};
+// Protected blog routes
+app.post("/api/blogs", jwtCheck, postBlogs);
+app.put("/api/blogs/:slug", jwtCheck, putBlogs);
+app.patch("/api/blogs/:slug/publish", jwtCheck, patchPublishBlog);
+app.get("/api/blogs/myposts", jwtCheck, getMyPosts);
 
-const increaseViewCount = async (req, res, next) => {
-  const { slug } = req.params;
-
-  try {
-    const blog = await Blog.findOne({ slug });
-    if (blog) {
-      blog.viewCount += 1;
-      await blog.save();
-    }
-  } catch (error) {
-    console.error("Error increasing view count:", error);
-  }
-
-  next();
-};
-
-app.post("/signup", postSignup);
-app.post("/login", postLogin);
-app.get("/blogs", getBlogs);
-app.get("/blogs/:slug", increaseViewCount, getBlogForSlug);
-
-app.post("/blogs", jwtCheck, postBlogs);
-app.patch("/blogs/:slug/publish", jwtCheck, patchPublishBlog);
-app.put("/blogs/:slug", jwtCheck, putBlogs);
-
+// ---------------- START SERVER ----------------
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
   connectDB();
 });

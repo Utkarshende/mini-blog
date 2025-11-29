@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar.jsx';
@@ -16,18 +16,21 @@ function Login() {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/login`, user);
+      const response = await axios.post(`${API_URL}/api/login`, user);
 
       console.log("LOGIN RESPONSE:", response.data);
 
       if (response.data.success && response.data.token) {
-        // Store token & user in localStorage
+        // Save token and user info
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("loggedInUser", JSON.stringify(response.data.user));
+        localStorage.setItem(
+          "loggedInUser",
+          JSON.stringify(response.data.user)
+        );
 
         toast.success("Login successful!");
 
-        // Redirect after login
+        // Redirect to home after short delay
         setTimeout(() => {
           window.location.href = "/";
         }, 700);
@@ -35,72 +38,39 @@ function Login() {
         toast.error("Login failed: Token missing in response.");
       }
     } catch (error) {
-      console.error("Login API error:", error.response?.data);
+      console.error("Login API error:", error.response?.data || error);
       toast.error(error.response?.data?.message || "Login failed");
-    }
-  };
-
-  // TEST AUTH FUNCTION
-  const testAuth = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      toast.error("No token found. Login first.");
-      return;
-    }
-
-    try {
-      const res = await axios.get(`${API_URL}/test-auth`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      console.log("TEST AUTH RESPONSE:", res.data);
-      toast.success("Token verified!");
-    } catch (err) {
-      console.error("Auth failed:", err.response?.data);
-      toast.error(err.response?.data?.message || "Auth failed");
     }
   };
 
   return (
     <div>
       <Navbar />
-      <div className='max-w-[400px] mx-auto border border-gray-300 py-10 px-14 rounded shadow-lg mt-10'>
-        <h1 className='text-center text-3xl font-bold my-4'>Login</h1>
+      <div className="max-w-[400px] mx-auto border border-gray-300 py-10 px-14 rounded shadow-lg mt-10">
+        <h1 className="text-center text-3xl font-bold my-4">Login</h1>
         <div>
           <input
             type="email"
-            placeholder='Email'
+            placeholder="Email"
             className="border p-2 rounded w-full mb-4 focus:ring-blue-500 focus:border-blue-500"
             value={user.email}
             onChange={(e) => setUser({ ...user, email: e.target.value })}
           />
-
           <input
             type="password"
-            placeholder='Password'
+            placeholder="Password"
             className="border p-2 rounded w-full mb-6 focus:ring-blue-500 focus:border-blue-500"
             value={user.password}
             onChange={(e) => setUser({ ...user, password: e.target.value })}
           />
-
           <button
-            className='bg-gray-700 text-white px-6 py-2 rounded mb-4 hover:bg-gray-800 transition-colors w-full'
-            type='button'
+            className="bg-gray-700 text-white px-6 py-2 rounded mb-4 hover:bg-gray-800 transition-colors w-full"
+            type="button"
             onClick={loginUser}
           >
             Login
           </button>
-
-          <button
-            className='bg-blue-600 text-white px-4 py-2 rounded mb-4 hover:bg-blue-700 transition-colors w-full'
-            type='button'
-            onClick={testAuth}
-          >
-            TEST AUTH
-          </button>
-
-          <p className='text-center text-sm'>
+          <p className="text-center text-sm">
             Don't have an account?{" "}
             <Link to="/signup" className="text-blue-500 hover:underline">
               Sign up

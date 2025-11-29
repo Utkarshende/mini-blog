@@ -90,15 +90,10 @@ const getBlogs = async (req, res) => {
     }
 };
 
-/**
- * NEW FUNCTION ADDED: Handles GET /blogs/myposts
- * This function uses the user ID attached by the auth middleware (req.user.id).
- */
 const getMyPosts = async (req, res) => {
     try {
         const { user } = req;
 
-        // This check confirms the user is authenticated
         if (!user || !user.id) {
             return res.status(401).json({ 
                 success: false, 
@@ -106,7 +101,6 @@ const getMyPosts = async (req, res) => {
             });
         }
         
-        // Find blogs where the 'author' field matches the authenticated user's ID (user.id)
         const myBlogs = await Blog.find({ author: user.id })
             .populate('author', '_id name email')
             .sort({ createdAt: -1 }); 
@@ -286,5 +280,5 @@ const putBlogs = async (req, res) => {
     }
 };
 
-// EXPORT STATEMENT UPDATED to include the new getMyPosts function
+
 export { postBlogs, getBlogs, getBlogForSlug ,patchPublishBlog, putBlogs, getMyPosts};
