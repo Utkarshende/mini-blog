@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar.jsx';
@@ -28,7 +28,7 @@ function Signup() {
         toast.error(response.data.message || "Signup failed");
       }
     } catch (error) {
-      console.error("Signup API error:", error.response?.data);
+      console.error("Signup API error:", error.response?.data || error);
       toast.error(error.response?.data?.message || "Signup failed");
     }
   };
