@@ -8,212 +8,184 @@ import { useParams } from 'react-router';
 import Navbar from '../components/Navbar.jsx';
 
 function EditBlog() {
+
     const [content, setContent] = useState("");
     const [title, setTitle] = useState("");
     const [category, setCategory] = useState(BLOG_CATEGORIES[0]);
     const [user, setUser] = useState(null);
-    const [originalAuthorId, setOriginalAuthorId] = useState(null); // State to store the author's ID
-    const { slug } = useParams();
-    
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-    
-    // Utility function to get the current token
-    const getToken = () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            toast.error("Please log in to perform this action.");
-        }
-        return token;
-    }
+    const [loading, setLoading] = useState(true);
 
-    // Load the blog data
+    const { slug } = useParams();
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+    const getToken = () => localStorage.getItem("token");
+
+    
     const loadBlog = useCallback(async (currentUser) => {
         if (!slug || !currentUser) return;
 
         try {
-            // Fetch the blog data
-            const response = await axios.get(`${API_URL}/blogs/${slug}`);
-            const blogData = response?.data?.data; 
+            const token = getToken();
 
-            if (!blogData) {
-                toast.error("Blog data not found.");
+            const response = await axios.get(`${API_URL}/blogs/${slug}`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+
+            const blog = response?.data?.data;
+
+            if (!blog) {
+                toast.error("Blog not found.");
                 return;
             }
 
-            // 🛑 SECURITY CHECK: Ensure current user is the author
-            if (blogData.author._id !== currentUser.id) {
-                toast.error("You are not authorized to edit this blog.");
-                window.location.href = "/"; // Redirect unauthorized user
+            // Normalize ID comparison
+            const loggedInUserId = currentUser._id || currentUser.id;
+
+            if (blog.author._id !== loggedInUserId) {
+                toast.error("🚫 Unauthorized access!");
+                setTimeout(() => window.location.href = "/", 1500);
                 return;
             }
 
-            // Set state only after passing the security check
-            setTitle(blogData.title);
-            setContent(blogData.content);
-            setCategory(blogData.category);
-            setOriginalAuthorId(blogData.author._id); // Store the author ID
+            setTitle(blog.title);
+            setContent(blog.content);
+            setCategory(blog.category);
+            setLoading(false);
 
         } catch (err) {
-            console.error("Error loading blog:", err);
-            // Handle 404/not found errors gracefully
-            if (err?.response?.status === 404) {
-                 toast.error("Blog not found.");
-            } else {
-                 toast.error(err?.response?.data?.message || "Error loading blog for edit.");
-            }
-            // Optional: Redirect home on failure
-            // setTimeout(() => window.location.href = "/", 1500); 
+            console.error(err);
+            toast.error(err?.response?.data?.message || "Error fetching blog");
+            setTimeout(() => window.location.href = "/", 1500);
+
         }
     }, [slug, API_URL]);
 
-    // 1. Load current user and set color mode on mount
+
+
     useEffect(() => {
         document.documentElement.setAttribute("data-color-mode", "light");
+
         const currentUser = getCurrentUser();
-        setUser(currentUser);
 
         if (!currentUser) {
-            toast.error("Please log in to edit a blog.");
-            window.location.href = "/login"; // Force login if not logged in
+            toast.error("Authentication required!");
+            window.location.href = "/login";
+            return;
         }
+
+        setUser(currentUser);
     }, []);
 
-    // 2. Load blog data only after user state is set
+
     useEffect(() => {
-        if (user) {
-            loadBlog(user);
-        }
+        if (user) loadBlog(user);
     }, [user, loadBlog]);
 
 
-    // Update Blog (PUT)
+
     const updateBlog = async () => {
-        if (!title || !content || !category) {
+        if (!title || !content) {
             toast.error("All fields are required.");
             return;
         }
-        
-        const token = getToken();
-        if (!token) return;
 
         try {
-            const response = await axios.put(`${API_URL}/blogs/${slug}`, {
-                title,
-                content,
-                category
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            const token = getToken();
+
+            const response = await axios.put(
+                `${API_URL}/blogs/${slug}`,
+                { title, content, category },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
             if (response?.data?.success) {
-                // 🔑 Optional: Set a flag to refresh MyPost page if you redirect there
-                // localStorage.setItem('blogsUpdated', 'true'); 
-                
-                toast.success("Blog updated successfully");
-                setTimeout(() => {
-                    // Consider redirecting to the single blog view page instead of home
-                    window.location.href = `/blog/${slug}`; 
-                }, 1500); 
+                toast.success("Blog updated successfully!");
+                setTimeout(() => window.location.href = `/blog/${slug}`, 1500);
             }
-        }
-        catch (err) {
-            toast.error(err?.response?.data?.message || "Error updating blog");
+
+        } catch (err) {
+            toast.error(err?.response?.data?.message || "Update failed.");
         }
     };
 
-    // Publish Blog (PATCH)
-    const publishBlog = async () => {
-        const token = getToken();
-        if (!token) return;
 
+    const publishBlog = async () => {
         try {
+            const token = getToken();
+
             const response = await axios.patch(
                 `${API_URL}/blogs/${slug}/publish`,
-                {}, // Empty body for a PATCH status update
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
             );
-            
-            if (response?.data?.success) { 
-                toast.success("Blog published successfully");
-                setTimeout(() => {
-                    window.location.href = `/blog/${slug}`;
-                }, 1500);
+
+            if (response?.data?.success) {
+                toast.success("Blog Published!");
+                setTimeout(() => window.location.href = `/blog/${slug}`, 1500);
             }
-        }
-        catch (err) {
-            toast.error(err?.response?.data?.message || "Error publishing blog");
+
+        } catch (err) {
+            toast.error(err?.response?.data?.message || "Failed to publish.");
         }
     };
 
-    // Optionally show a loading indicator if needed
-    if (!user || !title) {
+
+
+    if (loading) {
         return (
-            <div className='container mx-auto p-4 text-center'>
+            <div className="container mx-auto p-4 text-center">
                 <Navbar />
-                <div className='mt-8 text-xl text-gray-600'>Loading edit form...</div>
+                <div className="mt-10 text-lg text-gray-500">Loading Editor...</div>
             </div>
         );
     }
 
 
     return (
-        <div className='container mx-auto p-4'>
+        <div className="container mx-auto p-4">
             <Navbar />
-            <h1 className='text-3xl font-bold mb-4'>Edit Blog</h1>
-            
-            <input 
-                type="text" 
-                placeholder='Blog Title'
-                className='border p-2 w-full my-4'
+            <h1 className="text-3xl font-bold mb-4">Edit Blog</h1>
+
+            <input
+                type="text"
+                placeholder="Blog Title"
+                className="border p-2 w-full my-4"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)} 
+                onChange={(e) => setTitle(e.target.value)}
             />
 
-            <select 
-                value={category} 
-                onChange={(e) => setCategory(e.target.value)} 
-                className="border p-2 my-4"
-            >
+            <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="border p-2 my-4">
                 {BLOG_CATEGORIES.map((cate) => (
                     <option key={cate} value={cate}>{cate}</option>
                 ))}
             </select>
-            
+
             <MarkdownEditor
                 value={content}
-                onChange={(value) => {
-                    setContent(value);
-                }}
-                height='500px'
+                onChange={setContent}
+                height="480px"
             />
-            
-            <div className="flex gap-4 mt-4">
-                <button 
-                    className='bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600 transition-colors' 
-                    type='button'
-                    onClick={updateBlog}
-                >
+
+            <div className="flex gap-4 mt-6">
+                <button
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    onClick={updateBlog}>
                     Update Blog
                 </button>
 
-                <button 
-                    className='bg-green-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-green-600 transition-colors' 
-                    type='button'
-                    onClick={publishBlog}
-                >
+                <button
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                    onClick={publishBlog}>
                     Publish
                 </button>
             </div>
+
             <Toaster />
         </div>
-    )
+    );
 }
 
 export default EditBlog;
