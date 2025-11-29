@@ -10,7 +10,7 @@ const postBlogs = async (req, res) => {
         // The payload contains { id: user.id, ... }
         const {user} = req; 
 
-        if (!user || !user.id) {
+        if (!user || !user._id) {
             // This error should now only occur if the middleware fails or is missing
             return res.status(401).json({
                 success: false,
@@ -29,7 +29,7 @@ const postBlogs = async (req, res) => {
             title,
             content,
             category,
-            author: user.id, // Use user.id which comes from the token payload
+            author: user._id, // Use user.id which comes from the token payload
             slug:`temp-slug-${Date.now()}-${Math.random().toString()}`,
             status: 'draft' 
         });

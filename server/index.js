@@ -30,6 +30,14 @@ res.json({
     message:"Server is running..."});
 }) ;
 
+app.get("/test-auth", jwtCheck, (req, res) => {
+  res.json({
+    success: true,
+    message: "JWT Verified",
+    user: req.user
+  });
+});
+
 
 const jwtCheck = (req, res, next)=>{
     req.user=null;
