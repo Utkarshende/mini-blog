@@ -1,83 +1,69 @@
-import { Link } from 'react-router';
-import { useState } from 'react';
-import axios from 'axios';
-import Navbar from '../components/Navbar.jsx';
-import toast, { Toaster } from 'react-hot-toast';
+import React, { useState } from "react";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
+import Navbar from "../components/Navbar.jsx";
 
 function Login() {
-  const [user, setUser] = useState({ email: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-  // LOGIN FUNCTION
-  const loginUser = async () => {
-    if (!user.email || !user.password) {
-      toast.error("Email and Password are required.");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Please fill all fields.");
       return;
     }
 
     try {
-      const response = await axios.post(`${API_URL}/api/login`, user);
+      setLoading(true);
+      const res = await axios.post(`${API_URL}/api/login`, { email, password });
 
-      console.log("LOGIN RESPONSE:", response.data);
-
-      if (response.data.success && response.data.token) {
-        // Save token and user info
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem(
-          "loggedInUser",
-          JSON.stringify(response.data.user)
-        );
-
-        toast.success("Login successful!");
-
-        // Redirect to home after short delay
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 700);
+      if (res.data.success) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("loggedInUser", JSON.stringify(res.data.user));
+        toast.success("Logged in successfully!");
+        setTimeout(() => (window.location.href = "/blogs/myposts"), 1000);
       } else {
-        toast.error("Login failed: Token missing in response.");
+        toast.error(res.data.message || "Login failed.");
       }
-    } catch (error) {
-      console.error("Login API error:", error.response?.data || error);
-      toast.error(error.response?.data?.message || "Login failed");
+    } catch (err) {
+      console.error("Login API Error:", err.response?.data || err);
+      toast.error(err.response?.data?.message || "Server error during login.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
+    <div className="container mx-auto p-4 max-w-md">
       <Navbar />
-      <div className="max-w-[400px] mx-auto border border-gray-300 py-10 px-14 rounded shadow-lg mt-10">
-        <h1 className="text-center text-3xl font-bold my-4">Login</h1>
-        <div>
-          <input
-            type="email"
-            placeholder="Email"
-            className="border p-2 rounded w-full mb-4 focus:ring-blue-500 focus:border-blue-500"
-            value={user.email}
-            onChange={(e) => setUser({ ...user, email: e.target.value })}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="border p-2 rounded w-full mb-6 focus:ring-blue-500 focus:border-blue-500"
-            value={user.password}
-            onChange={(e) => setUser({ ...user, password: e.target.value })}
-          />
-          <button
-            className="bg-gray-700 text-white px-6 py-2 rounded mb-4 hover:bg-gray-800 transition-colors w-full"
-            type="button"
-            onClick={loginUser}
-          >
-            Login
-          </button>
-          <p className="text-center text-sm">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-blue-500 hover:underline">
-              Sign up
-            </Link>
-          </p>
-        </div>
-      </div>
+      <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
+      <form onSubmit={handleLogin} className="flex flex-col gap-4">
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <button
+          type="submit"
+          className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
+          disabled={loading}
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
+      </form>
       <Toaster />
     </div>
   );

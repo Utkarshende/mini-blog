@@ -1,43 +1,23 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import mongoose from "mongoose";
-import jwt from "jsonwebtoken";
-
-import { postSignup, postLogin } from "./controllers/user.js";
-import blogRoutes from "./routes/blogRoutes.js";
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import blogRoutes from './routes/blogRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 dotenv.config();
-
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ---- Connect to DB ----
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URL);
-    console.log("MongoDB connected successfully");
-  } catch (error) {
-    console.error("MongoDB Error:", error);
-  }
-};
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.log('MongoDB Error:', err));
 
-// ---- Test Route ----
-app.get("/api", (req, res) =>
-  res.json({ success: true, message: "Server is running..." })
-);
+app.use('/api/blogs', blogRoutes);
+app.use('/api', userRoutes);
 
-// ---- Auth Routes ----
-app.post("/api/signup", postSignup);
-app.post("/api/login", postLogin);
+app.get('/', (req, res) => res.send('API is running'));
 
-// ---- Blog Routes (IMPORTANT FIX) ----
-app.use("/api/blogs", blogRoutes);
-
-// ---- Start Server ----
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  connectDB();
-});
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));

@@ -1,94 +1,43 @@
-import User from "../models/User.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import Joi from "joi"; // optional
-
-const signupSchema = Joi.object({
-  name: Joi.string().min(2).max(50).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().min(8).pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/).required()
-});
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
+dotenv.config();
 
 export const postSignup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: "All fields are required." });
+    }
 
-    // Validate input
-    const { error } = signupSchema.validate({ name, email, password });
-    if (error)
-      return res.status(400).json({ success: false, message: error.message });
-
-    // Check if user exists
     const existing = await User.findOne({ email });
-    if (existing)
-      return res
-        .status(400)
-        .json({ success: false, message: "User already exists" });
+    if (existing) return res.status(400).json({ success: false, message: "Email already exists." });
 
-    // Hash password
-    const hashed = await bcrypt.hash(password, 10);
+    const user = new User({ name, email, password });
+    await user.save();
 
-    // Save user
-    const user = new User({ name, email, password: hashed });
-    const savedUser = await user.save();
-
-    const userObj = savedUser.toObject();
-    delete userObj.password; // Remove password from response
-
-    return res
-      .status(201)
-      .json({ success: true, message: "User registered", user: userObj });
-  } catch (error) {
-    console.error("Signup error:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error during signup" });
+    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.status(201).json({ success: true, data: { name: user.name, email: user.email, id: user._id, token } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// --------------------- LOGIN ---------------------
 export const postLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password)
-      return res
-        .status(400)
-        .json({ success: false, message: "Email and password required" });
+    if (!email || !password) return res.status(400).json({ success: false, message: "Email and password required." });
 
-    // Find user
     const user = await User.findOne({ email });
-    if (!user)
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
+    if (!user) return res.status(401).json({ success: false, message: "Invalid credentials." });
 
-    // Compare password
     const match = await bcrypt.compare(password, user.password);
-    if (!match)
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
+    if (!match) return res.status(401).json({ success: false, message: "Invalid credentials." });
 
-    // Generate JWT
-    const token = jwt.sign(
-      { _id: user._id.toString(), email: user.email, name: user.name },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    const userObj = user.toObject();
-    delete userObj.password;
-
-    return res.json({
-      success: true,
-      message: "Logged in successfully",
-      token, // frontend will store this
-      user: userObj, // sanitized user
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error during login" });
+    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.status(200).json({ success: true, data: { name: user.name, email: user.email, id: user._id, token } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };

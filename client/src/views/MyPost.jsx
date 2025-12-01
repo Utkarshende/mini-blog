@@ -1,67 +1,94 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar.jsx";
 import BlogCard from "../components/BlogCard.jsx";
-import toast, { Toaster } from "react-hot-toast";
 
 function MyPost() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-  const fetchMyBlogs = async () => {
-    try {
+  useEffect(() => {
+    const fetchMyPosts = async () => {
       const token = localStorage.getItem("token");
-
       if (!token) {
-        toast.error("You must be logged in.");
-        setLoading(false);
+        toast.error("Please login first.");
+        setTimeout(() => (window.location.href = "/login"), 1000);
         return;
       }
 
-      const res = await axios.get("http://localhost:8080/api/blogs/myposts", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      try {
+        setLoading(true);
+        const res = await axios.get(`${API_URL}/api/blogs/myposts`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      if (res.data.success) {
-        setBlogs(res.data.data);
-      } else {
-        toast.error(res.data.message || "Failed to load posts.");
+        if (res.data.success) {
+          setBlogs(res.data.blogs || []);
+        } else {
+          toast.error(res.data.message || "Failed to fetch your posts.");
+        }
+      } catch (err) {
+        console.error("API Error:", err.response?.data || err);
+        if (err.response?.status === 401) {
+          toast.error("Unauthorized. Please login again.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("loggedInUser");
+          setTimeout(() => (window.location.href = "/login"), 1000);
+        } else {
+          toast.error(err.response?.data?.message || "Server error fetching posts.");
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching user's blogs:", error);
-      toast.error(error.response?.data?.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  useEffect(() => {
-    fetchMyBlogs();
+    fetchMyPosts();
   }, []);
 
-  return (
-    <>
-      <Navbar />
-      <Toaster />
-
-      <div className="container mx-auto px-4 mt-6">
-        <h1 className="text-2xl font-bold mb-4">My Blogs</h1>
-
-        {loading ? (
-          <p className="text-gray-500">Loading your blogs...</p>
-        ) : blogs.length === 0 ? (
-          <p className="text-gray-600">You haven't created any blogs yet.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {blogs.map((blog) => (
-              <BlogCard key={blog._id} blog={blog} />
-            ))}
-          </div>
-        )}
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+        <Navbar />
+        <p className="mt-8 text-xl">Loading your posts...</p>
       </div>
-    </>
+    );
+  }
+
+  if (blogs.length === 0) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+        <Navbar />
+        <p className="mt-8 text-xl">
+          You have no posts yet. <br />
+          <a href="/new" className="text-blue-500 hover:underline">
+            Create your first blog
+          </a>
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <Navbar />
+      <h1 className="text-3xl font-bold mb-6">My Posts</h1>
+      {blogs.map((blog) => (
+        <BlogCard
+          key={blog._id}
+          title={blog.title}
+          author={blog.author.name}
+          category={blog.category}
+          slug={blog.slug}
+          updatedAt={blog.updatedAt}
+          publishedAt={blog.publishedAt}
+          viewCount={blog.viewCount}
+          status={blog.status}
+        />
+      ))}
+      <Toaster />
+    </div>
   );
 }
 

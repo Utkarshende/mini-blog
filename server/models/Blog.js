@@ -1,14 +1,16 @@
-import { model, Schema } from "mongoose";
+import mongoose from 'mongoose';
 
-const blogSchema = new Schema({
+const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
-  status: { type: String, enum: ["draft","published","archived"], default: "draft" },
   category: { type: String, required: true },
-  publishedAt: { type: Date },
-  author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   slug: { type: String, required: true, unique: true },
-  viewCount: { type: Number, default: 0 }
-}, { timestamps: true });
+  status: { type: String, enum: ['draft', 'published'], default: 'draft' },
+  viewCount: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date },
+  publishedAt: { type: Date },
+});
 
-export default model("Blog", blogSchema);
+export default mongoose.model('Blog', blogSchema);

@@ -1,88 +1,28 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
-import BlogCard from '../components/BlogCard.jsx';
-import { getCurrentUser } from './../util.js';
+import axios from 'axios';
 import Navbar from '../components/Navbar.jsx';
+import BlogCard from '../components/BlogCard.jsx';
+import toast, { Toaster } from 'react-hot-toast';
 
-function AllBlogs() {
-  const [user, setUser] = useState(null);
+export default function AllBlogs() {
   const [blogs, setBlogs] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
   useEffect(() => {
-    const loggedInUser = getCurrentUser();
-    setUser(loggedInUser);
-
-    const fetchBlogs = async () => {
-      setIsLoading(true);
-      const url = `${API_URL}/api/blogs`; // <-- added /api prefix
-
-      try {
-        const response = await axios.get(url);
-        setBlogs(response.data.data);
-      } catch (error) {
-        console.error("Error fetching blogs:", error.response?.data || error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBlogs();
+    axios.get(`${API_URL}/api/blogs`)
+      .then(res => setBlogs(res.data.data || []))
+      .catch(err => toast.error(err.response?.data?.message || "Failed to fetch blogs"))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-4 text-center">
-        <Navbar />
-        <div className="mt-8 text-xl text-gray-600">Loading blogs...</div>
-      </div>
-    );
-  }
-
-  if (blogs.length === 0) {
-    return (
-      <div className="container mx-auto p-4 text-center">
-        <Navbar />
-        <div className="mt-8 text-xl text-gray-600">No published blogs found.</div>
-      </div>
-    );
-  }
-
+  if (loading) return <div className="container p-4"><Navbar /><p>Loading...</p></div>;
   return (
-    <div>
-      <div className="container mx-auto p-4">
-        <Navbar />
-        {blogs.map((blog) => {
-          const {
-            _id,
-            title,
-            author,
-            category,
-            slug,
-            updatedAt,
-            publishedAt,
-            viewCount,
-            status = 'published',
-          } = blog;
-
-          return (
-            <BlogCard
-              key={_id}
-              title={title}
-              author={author}
-              category={category}
-              slug={slug}
-              updatedAt={updatedAt}
-              publishedAt={publishedAt}
-              viewCount={viewCount}
-              status={status}
-            />
-          );
-        })}
-      </div>
+    <div className="container mx-auto p-4">
+      <Navbar />
+      <h1 className="text-2xl font-bold mb-4">All Blogs</h1>
+      {blogs.map(b => <BlogCard key={b._id} {...b} />)}
+      <Toaster />
     </div>
   );
 }
-
-export default AllBlogs;

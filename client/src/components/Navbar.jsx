@@ -1,54 +1,32 @@
-import React, {useState, useEffect } from 'react'
-import { getCurrentUser } from '../util';
-import { Link } from 'react-router'; 
+import { Link } from 'react-router';
+import { getCurrentUser, logoutUser } from '../util.js';
 
-function Navbar() {
-    const [user, setUser] = useState(null);
-    
-    useEffect(()=>{
-        setUser(getCurrentUser());
-    },[]);
-    
-    return (
-        <div className='bg-indigo-700 text-white p-4 mb-4 flex justify-between items-center shadow-lg'>
-            <Link to="/" className="text-xl font-bold hover:text-indigo-200 transition-colors">
-                Mini Blog App
-            </Link>
-            
-            <div className="flex items-center space-x-4">
-                {user && (
-                    <>
-                        <Link to="/new" className="hover:text-indigo-200 transition-colors">
-                            New Blog
-                        </Link>
-                        <Link to="/blogs/myposts" className="hover:text-indigo-200 transition-colors">
-                            My Posts
-                        </Link>
-                        <Link to="/blogcard" className="hover:text-indigo-200 transition-colors">
-                           Blog Card
-                        </Link>
-                    </>
-                )}
+export default function Navbar() {
+  const user = getCurrentUser();
 
-                <div className='ml-4'>
-                    {user ? (
-                    <span 
-                        className="cursor-pointer hover:text-red-400 transition-colors"
-                        onClick={()=>{
-                            localStorage.clear();
-                            window.location.href = "/login"; 
-                        }}>
-                        Logout ({user.name})
-                    </span>
-                    ) : (
-                        <Link to ="/login" className="hover:text-indigo-200 transition-colors">
-                            Login
-                        </Link>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
+  const handleLogout = () => {
+    logoutUser();
+    window.location.href = '/login';
+  };
+
+  return (
+    <nav className="bg-indigo-600 text-white p-4 flex justify-between">
+      <Link to="/" className="font-bold text-lg">MiniBlog</Link>
+      <div>
+        <Link to="/" className="mr-4">All Blogs</Link>
+        {user ? (
+          <>
+            <Link to="/new" className="mr-4">New Blog</Link>
+            <Link to="/myposts" className="mr-4">My Posts</Link>
+            <button onClick={handleLogout}>Logout</button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="mr-4">Login</Link>
+            <Link to="/signup">Signup</Link>
+          </>
+        )}
+      </div>
+    </nav>
+  );
 }
-
-export default Navbar;
