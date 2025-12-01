@@ -11,6 +11,7 @@ function NewBlog() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(BLOG_CATEGORIES[0]);
   const [user, setUser] = useState(null);
+
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
   useEffect(() => {
@@ -20,6 +21,7 @@ function NewBlog() {
 
     if (!loggedInUser) {
       toast.error("You must be logged in to create a blog.");
+      setTimeout(() => window.location.href = "/login", 1200);
     }
   }, []);
 
@@ -31,8 +33,8 @@ function NewBlog() {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("You must be logged in to create a blog.");
-      setTimeout(() => window.location.href = "/login", 1000);
+      toast.error("Authentication expired. Please login again.");
+      setTimeout(() => window.location.href = "/login", 1200);
       return;
     }
 
@@ -40,23 +42,31 @@ function NewBlog() {
       const response = await axios.post(
         `${API_URL}/api/blogs`,
         { title, content, category },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }
+        }
       );
 
       if (response.data.success) {
-        toast.success("Blog created successfully and saved as a draft!");
-        setTimeout(() => window.location.href = "/blogs/myposts", 1500);
+        toast.success("Blog saved as draft!");
+        setTimeout(() => window.location.href = "/blogs/myposts", 1200);
       } else {
         toast.error(response.data.message || "Failed to save blog.");
       }
+
     } catch (err) {
-      console.error("API Error Response:", err.response?.data);
+      console.error("API Error:", err.response?.data);
+
       if (err.response?.status === 401) {
-        toast.error("Unauthorized. Please login again.");
+        toast.error("Session expired. Login again.");
         localStorage.removeItem("token");
         localStorage.removeItem("loggedInUser");
+        setTimeout(() => window.location.href = "/login", 1200);
       } else {
-        toast.error(err.response?.data?.message || "Error creating blog.");
+        toast.error(err.response?.data?.message || "Something went wrong.");
       }
     }
   };
@@ -87,8 +97,9 @@ function NewBlog() {
       <div className='rounded overflow-hidden border border-gray-300 shadow-md'>
         <MarkdownEditor
           value={content}
+          height="300px"
+          visible
           onChange={(value) => setContent(value)}
-          height='500px'
         />
       </div>
 
