@@ -20,7 +20,6 @@ function NewBlog() {
 
     if (!loggedInUser) {
       toast.error("You must be logged in to create a blog.");
-      setTimeout(() => window.location.href = "/login", 1000);
     }
   }, []);
 
@@ -39,7 +38,7 @@ function NewBlog() {
 
     try {
       const response = await axios.post(
-        `${API_URL}/blogs`,
+        `${API_URL}/api/blogs`,
         { title, content, category },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -56,7 +55,6 @@ function NewBlog() {
         toast.error("Unauthorized. Please login again.");
         localStorage.removeItem("token");
         localStorage.removeItem("loggedInUser");
-        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error(err.response?.data?.message || "Error creating blog.");
       }

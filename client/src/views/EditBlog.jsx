@@ -27,7 +27,7 @@ function EditBlog() {
         try {
             const token = getToken();
 
-            const response = await axios.get(`${API_URL}/blogs/${slug}`, {
+            const response = await axios.get(`${API_URL}/api/blogs/${slug}`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {}
             });
 
@@ -93,7 +93,7 @@ function EditBlog() {
             const token = getToken();
 
             const response = await axios.put(
-                `${API_URL}/blogs/${slug}`,
+                `${API_URL}/api/blogs/${slug}`,
                 { title, content, category },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -114,7 +114,7 @@ function EditBlog() {
             const token = getToken();
 
             const response = await axios.patch(
-                `${API_URL}/blogs/${slug}/publish`,
+                `${API_URL}/api/blogs/${slug}/publish`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
