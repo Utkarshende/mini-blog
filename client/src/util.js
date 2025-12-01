@@ -9,16 +9,14 @@ export const logoutUser = () => {
 };
 
 export const getCurrentUser = () => {
-  const user = localStorage.getItem("loggedInUser");
-
-  if (!user || user === "undefined" || user === "null") {
-    return null;
-  }
-
   try {
-    return JSON.parse(user);
-  } catch (error) {
-    console.error("Error parsing loggedInUser:", error);
+    const userData = localStorage.getItem("user");
+    return userData ? JSON.parse(userData) : null;
+  } catch {
     return null;
   }
+};
+
+export const getToken = () => {
+  return localStorage.getItem("token") || null;
 };

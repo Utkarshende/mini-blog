@@ -19,19 +19,24 @@ function Login() {
 
     try {
       setLoading(true);
+
       const res = await axios.post(`${API_URL}/api/login`, { email, password });
 
       if (res.data.success) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("loggedInUser", JSON.stringify(res.data.user));
-        toast.success("Logged in successfully!");
-        setTimeout(() => (window.location.href = "/blogs/myposts"), 1000);
+        const user = res.data.data; // <-- CORRECT: user object comes from .data
+
+        // Save data correctly
+        localStorage.setItem("token", user.token);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        toast.success("Login successful!");
+        setTimeout(() => (window.location.href = "/myposts"), 1000);
       } else {
-        toast.error(res.data.message || "Login failed.");
+        toast.error(res.data.message || "Invalid login.");
       }
     } catch (err) {
       console.error("Login API Error:", err.response?.data || err);
-      toast.error(err.response?.data?.message || "Server error during login.");
+      toast.error(err.response?.data?.message || "Server error.");
     } finally {
       setLoading(false);
     }
@@ -56,14 +61,16 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
           className="border p-2 rounded"
         />
+
         <button
           type="submit"
-          className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
           disabled={loading}
+          className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
+
       <Toaster />
     </div>
   );

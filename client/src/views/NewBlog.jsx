@@ -28,12 +28,14 @@ function NewBlog() {
       return;
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
+    const token = localStorage.getItem("token")?.replace(/"/g, "");
+console.log("TOKEN SENT:", token);
+if (!token) {
       toast.error("You must login first.");
       setTimeout(() => (window.location.href = "/login"), 1000);
       return;
     }
+
 
     try {
       setLoading(true);
@@ -62,7 +64,6 @@ function NewBlog() {
         toast.error("Unauthorized. Please login again.");
         localStorage.removeItem("token");
         localStorage.removeItem("loggedInUser");
-        setTimeout(() => (window.location.href = "/login"), 1000);
       } else {
         toast.error(err.response?.data?.message || "Server error creating blog.");
       }
