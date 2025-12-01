@@ -1,22 +1,14 @@
-export const saveCurrentUser = (user) => {
-  localStorage.setItem("loggedInUser", JSON.stringify(user));
-  localStorage.setItem("token", user.token);
-};
-
-export const logoutUser = () => {
-  localStorage.removeItem("loggedInUser");
-  localStorage.removeItem("token");
-};
-
 export const getCurrentUser = () => {
   try {
-    const userData = localStorage.getItem("user");
-    return userData ? JSON.parse(userData) : null;
-  } catch {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    localStorage.removeItem('user');
     return null;
   }
 };
 
 export const getToken = () => {
-  return localStorage.getItem("token") || null;
+  const t = localStorage.getItem('token');
+  return t ? t.replace(/"/g, '') : null;
 };
