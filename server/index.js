@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import blogRoutes from './routes/blogRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import router from './routes/blogRoutes.js';
 
 dotenv.config();
 const app = express();

@@ -54,7 +54,7 @@ if (!token) {
       if (res.data.success) {
         toast.success("Blog created successfully and saved as draft!");
         // Redirect to MyPosts after short delay
-        setTimeout(() => (window.location.href = "/blogs/myposts"), 1500);
+        setTimeout(() => (window.location.href = "/myposts"), 1500);
       } else {
         toast.error(res.data.message || "Failed to save blog");
       }

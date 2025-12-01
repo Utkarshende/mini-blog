@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 import { getToken } from "../util.js";
 
 export default function ProtectedRoute({ children }) {
