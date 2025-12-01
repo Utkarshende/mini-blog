@@ -1,22 +1,41 @@
-import { createRoot } from 'react-dom/client';
-import './index.css';
-import { BrowserRouter, Routes, Route } from 'react-router';
-import AllBlogs from './views/AllBlogs.jsx';
-import ReadBlog from './views/ReadBlog.jsx';
-import Login from './views/Login.jsx';
-import Signup from './views/Signup.jsx';
-import MyPosts from './views/MyPost.jsx';
-import BlogCard from './components/BlogCard.jsx';
-import NewBlog from './views/NewBlog.jsx';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./views/Login";
+import Signup from "./views/Signup";
+import MyPost from "./views/MyPost";
+import NewBlog from "./views/NewBlog";
+import Home from "./views/Home";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
-createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-     <Routes>
-        <Route path="/" element={<AllBlogs />} />
-        <Route path="/myposts" element={<MyPosts />} />
-        <Route path="/new" element={<NewBlog />} />
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
+        {/* Protected Routes */}
+        <Route
+          path="/myposts"
+          element={
+            <ProtectedRoute>
+              <MyPost />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/new"
+          element={
+            <ProtectedRoute>
+              <NewBlog />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-  </BrowserRouter>
-);
+    </BrowserRouter>
+  );
+}
+
+export default App;
