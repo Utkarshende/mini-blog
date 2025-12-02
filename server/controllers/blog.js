@@ -119,3 +119,27 @@ export const patchPublishBlog = async (req, res) => {
     return res.status(500).json({ success:false, message: 'Server error' });
   }
 };
+
+export const deleteBlog = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const blog = await Blog.findOne({ slug });
+
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "Blog not found" });
+    }
+
+    // Only owner can delete
+    if (blog.author.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Unauthorized request" });
+    }
+
+    await Blog.deleteOne({ slug });
+
+    res.json({ success: true, message: "Blog deleted successfully" });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
