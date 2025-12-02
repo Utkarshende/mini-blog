@@ -1,14 +1,20 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema } from "mongoose";
+import slugify from "slugify";
 
 const blogSchema = new Schema({
   title: { type: String, required: true },
+  slug: { type: String, unique: true },
   content: { type: String, required: true },
-  status: { type: String, enum: ['draft','published','archived'], default: 'draft' },
-  category: { type: String, required: true },
-  publishedAt: { type: Date },
-  author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  slug: { type: String, required: true, unique: true },
-  viewCount: { type: Number, default: 0 }
+  category: String,
+  author: { type: Schema.Types.ObjectId, ref: "User" },
 }, { timestamps: true });
 
-export default model('Blog', blogSchema);
+// Auto-generate slug
+blogSchema.pre("save", function(next) {
+  if(!this.slug) {
+    this.slug = slugify(this.title, { lower: true, strict: true }) + "-" + Date.now();
+  }
+  next();
+});
+
+export default model("Blog", blogSchema);
