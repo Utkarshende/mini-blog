@@ -15,14 +15,16 @@ const router = express.Router();
 router.get('/', getBlogs);
 router.get('/myposts', jwtCheck, getMyPosts);
 
-router.post('/', jwtCheck, postBlogs);
-
-// 🔥 Add DELETE route here
+// 🔥 DELETE must come BEFORE :slug route
 router.delete('/:slug', jwtCheck, deleteBlog);
 
+// edit route
 router.put('/:slug', jwtCheck, putBlogs);
+
+// publish route
 router.patch('/:slug/publish', jwtCheck, patchPublishBlog);
 
+// 🔥 keep this LAST always:
 router.get('/:slug', getBlogForSlug);
 
 export default router;
