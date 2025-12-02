@@ -8,11 +8,15 @@ export default function MyPost() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ----------------------- FETCH MY POSTS -----------------------
   useEffect(() => {
     const fetchMyPosts = async () => {
       try {
-        const res = await API.get(`/blogs/myposts`);
+        const res = await API.get(`/blogs/myposts`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")?.replace(/"/g, "")}`,
+          }
+        });
+
         if (res.data?.success) {
           setBlogs(res.data.blogs || []);
         } else {
@@ -29,12 +33,16 @@ export default function MyPost() {
     fetchMyPosts();
   }, []);
 
-  // ----------------------- DELETE BLOG -----------------------
   const deleteBlog = async (slug) => {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
     try {
-      const res = await API.delete(`/blogs/${slug}`);
+      const res = await API.delete(`/blogs/${slug}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")?.replace(/"/g, "")}`,
+        }
+      });
+
       if (res.data?.success) {
         toast.success("Blog deleted successfully");
         setBlogs(prev => prev.filter((b) => b.slug !== slug));
@@ -61,7 +69,7 @@ export default function MyPost() {
           <BlogCard 
             key={b._id} 
             {...b} 
-            onDelete={deleteBlog}  // <-- IMPORTANT
+            onDelete={deleteBlog}
           />
         ))
       )}
