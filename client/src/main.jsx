@@ -7,6 +7,7 @@ import Signup from './pages/Signup.jsx';
 import MyPost from './pages/MyPost.jsx';
 import NewBlog from './pages/NewBlog.jsx';
 import EditBlog from './pages/EditBlog.jsx';
+import BlogDetails from './pages/BlogDetails.jsx';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')).render(
       <Route path="/myposts" element={<MyPost />} />
       <Route path="/new" element={<NewBlog />} />
       <Route path="/edit/:slug" element={<EditBlog />} />
+      <Route path="/blog/:slug" element={<BlogDetails />} />
       <Route path="*" element={<div className="p-4">404 Not Found</div>} />
     </Routes>
   </BrowserRouter>

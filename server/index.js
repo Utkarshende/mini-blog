@@ -19,6 +19,10 @@ mongoose.connect(process.env.MONGODB_URI, { })
 // Routes
 app.use('/api/blogs', blogRoutes);
 app.use('/api', userRoutes);
+app.use((req, res, next) => {
+  console.log("➡️", req.method, req.url);
+  next();
+});
 
 app.get('/', (req, res) => res.send('API is running'));
 

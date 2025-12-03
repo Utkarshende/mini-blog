@@ -23,11 +23,13 @@ export default function BlogCard({
     <div className="border p-5 rounded-lg shadow-md bg-white hover:shadow-lg transition-all duration-200">
       <h3 className="text-xl font-bold text-gray-800">{title}</h3>
       <p className="text-sm text-gray-600 mt-1">
-        By {authorName} • {category} • <span className="capitalize">{status}</span>
+        By {authorName} • {category} •{" "}
+        <span className="capitalize">{status}</span>
       </p>
 
       <div className="flex items-center gap-2 mt-4">
-        {/* Read Button */}
+        
+        {/* Read */}
         <Link
           to={`/blog/${slug}`}
           className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition"
@@ -35,15 +37,15 @@ export default function BlogCard({
           Read
         </Link>
 
-        {/* Edit Button */}
+        {/* Edit */}
         <Link
-          to={`/blog/edit/${slug}`}
+          to={`/edit/${slug}`}
           className="px-3 py-1 text-sm bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition"
         >
           Edit
         </Link>
 
-        {/* Delete Button */}
+        {/* Delete */}
         <button
           onClick={handleDelete}
           className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition"

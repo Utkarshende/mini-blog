@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import MarkdownEditor from "@uiw/react-markdown-editor";
@@ -12,12 +12,16 @@ function EditBlog() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
 
-  // Fetch existing blog
   useEffect(() => {
     async function fetchBlog() {
       try {
-        const res = await API.get(`/blogs/${slug}`);
-        const blog = res.data.blog;
+        const token = localStorage.getItem("token");
+
+        const res = await API.get(`/blogs/${slug}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const blog = res.data.data;
         setTitle(blog.title);
         setContent(blog.content);
         setCategory(blog.category);
@@ -30,17 +34,19 @@ function EditBlog() {
 
   async function saveChanges() {
     try {
-      await API.put(`/blogs/${slug}`, {
-        title,
-        content,
-        category,
-      });
+      const token = localStorage.getItem("token");
+console.log("PUT Request slug:", slug);
+      await API.put(
+        `/blogs/${slug}`,
+        { title, content, category },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      toast.success("Blog updated!");
+      toast.success("Blog updated successfully");
       navigate(`/blog/${slug}`);
     } catch (err) {
-      toast.error("Update failed!");
-      console.error(err.response?.data);
+      toast.error(err.response?.data?.message || "Failed to update blog");
+      console.log("UPDATE ERROR:", err.response?.data);
     }
   }
 
