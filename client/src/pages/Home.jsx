@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import BlogCard from "../components/BlogCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function Home() {
   const [blogs, setBlogs] = useState([]);
@@ -31,37 +30,36 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      {/* --- HERO SECTION --- */}
-      <section className="text-center py-16 px-4">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Discover Ideas & Stories
-        </h1>
-        <p className="text-gray-500 mt-2 text-lg">
-          Read insightful blogs from the community.
+      {/* HEADER */}
+      <div className="text-center py-8 animate-fadeIn">
+        <h1 className="text-3xl font-semibold">Explore Blogs</h1>
+        <p className="text-gray-500 mt-1">
+          Read, learn, and share what matters to you.
         </p>
-      </section>
+      </div>
 
-      {/* --- SEARCH BAR --- */}
-      <div className="max-w-xl mx-auto px-4 flex gap-2">
+      {/* SEARCH */}
+      <div className="max-w-md mx-auto px-4 mb-8 flex gap-2">
         <Input
-          placeholder="Search blogs..."
+          placeholder="Search by title or category..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Button variant="default">Search</Button>
+        <Button disabled>Search</Button>
       </div>
 
-      {/* --- BLOGS SECTION --- */}
-      <div className="max-w-5xl mx-auto mt-10 px-4">
+      {/* BLOG LIST */}
+      <div className="max-w-5xl mx-auto px-4">
         {filteredBlogs.length === 0 ? (
-          <Card className="p-6 text-center">
-            <CardContent>
-              <p className="text-gray-500">No blogs found 👀</p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-20 animate-fadeIn">
+            <p className="text-gray-500 mb-4 text-lg">No blogs found.</p>
+            <Button asChild>
+              <a href="/new">Write a Blog ➜</a>
+            </Button>
+          </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBlogs.map((blog) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
+            {filteredBlogs.map(blog => (
               <BlogCard key={blog._id} {...blog} />
             ))}
           </div>

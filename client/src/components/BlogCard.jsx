@@ -1,38 +1,44 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-export default function BlogCard({ title, author, category, slug, status }) {
+export default function BlogCard({ title, slug, description, createdAt, onDelete, onEdit }) {
   return (
-    <Card className="hover:shadow-lg transition-all duration-200 border border-gray-200">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold line-clamp-2">
-          {title}
-        </CardTitle>
-        <div className="flex gap-2 items-center text-sm text-gray-500">
-          <span>By {author?.name || author}</span> •
-          <Badge variant="outline" className="rounded-full px-2 text-xs capitalize">
-            {category}
-          </Badge>
+    <div className="border p-4 rounded-lg shadow hover:shadow-md transition bg-white mb-4">
+      
+      {/* Clickable Blog Content */}
+      <Link to={`/blog/${slug}`}>
+        <h3 className="text-xl font-semibold">{title}</h3>
+        <p className="text-gray-600 mt-1">{description}</p>
+        <p className="text-sm text-gray-400 mt-2">
+          {new Date(createdAt).toLocaleDateString()}
+        </p>
+      </Link>
+
+      {/* Action Buttons (Only show if the page passes them) */}
+      {(onEdit || onDelete) && (
+        <div className="flex gap-3 mt-4">
+          {onEdit && (
+            <button
+              onClick={() => onEdit(slug)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            >
+              Edit
+            </button>
+          )}
+
+          {onDelete && (
+            <button
+              onClick={() => onDelete(slug)}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+            >
+              Delete
+            </button>
+          )}
         </div>
-      </CardHeader>
-
-      <CardContent className="flex justify-between items-center pt-3">
-        <Link to={`/blog/${slug}`}>
-          <Button variant="default" size="sm">
-            Read
-          </Button>
-        </Link>
-
-        <Badge
-          className={`capitalize px-2 text-xs ${
-            status === "published" ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
-          }`}
-        >
-          {status}
-        </Badge>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
+

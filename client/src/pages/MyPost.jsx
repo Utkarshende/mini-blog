@@ -14,7 +14,7 @@ export default function MyPost() {
         const res = await API.get(`/blogs/myposts`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")?.replace(/"/g, "")}`,
-          }
+          },
         });
 
         if (res.data?.success) {
@@ -40,12 +40,12 @@ export default function MyPost() {
       const res = await API.delete(`/blogs/${slug}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")?.replace(/"/g, "")}`,
-        }
+        },
       });
 
       if (res.data?.success) {
         toast.success("Blog deleted successfully");
-        setBlogs(prev => prev.filter((b) => b.slug !== slug));
+        setBlogs((prev) => prev.filter((b) => b.slug !== slug));
       } else {
         toast.error(res.data?.message || "Delete failed");
       }
@@ -53,6 +53,10 @@ export default function MyPost() {
       console.error("Delete Error:", err);
       toast.error("Error deleting blog");
     }
+  };
+
+  const handleEdit = (slug) => {
+    window.location.href = `/edit/${slug}`;
   };
 
   return (
@@ -63,13 +67,19 @@ export default function MyPost() {
       {loading ? (
         <p>Loading...</p>
       ) : blogs.length === 0 ? (
-        <p>No posts yet. <a href="/new" className="text-blue-500 underline">Create one</a></p>
+        <p>
+          No posts yet.{" "}
+          <a href="/new" className="text-blue-500 underline">
+            Create one
+          </a>
+        </p>
       ) : (
         blogs.map((b) => (
-          <BlogCard 
-            key={b._id} 
-            {...b} 
+          <BlogCard
+            key={b._id}
+            {...b}
             onDelete={deleteBlog}
+            onEdit={handleEdit}
           />
         ))
       )}
