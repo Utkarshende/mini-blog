@@ -31,26 +31,6 @@ Editor	@uiw/react-markdown-editor
 
 🖼 Responsive UI using Shadcn + Tailwind
 
-## 🔥 API Routes Overview
-
-Method  	Endpoint	          Description	     Protected
-
-POST	 /api/signup	         Register user   	    ❌
-
-POST	 /api/login	             Login user	            ❌
-
-POST	 /api/blogs	             Create new blog	    ✅
-
-GET	     /api/blogs	             Fetch all blogs	    ❌
-
-GET	     /api/blogs/:slug	     Get single blog	    ❌
-
-GET	     /api/blogs/myposts	     Get logged user blogs	✅
-
-PUT  	 /api/blogs/:id	         Edit blog	            ✅
-
-PATCH	 /api/blogs/:id/publish	 Publish/Unpublish	    ✅
-
 ## Platform Link : 
 
 GitHub : [https://github.com/Utkarshende]
