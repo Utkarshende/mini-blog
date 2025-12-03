@@ -1,58 +1,38 @@
-import React from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-export default function BlogCard({
-  title,
-  author,
-  category,
-  slug,
-  publishedAt,
-  viewCount,
-  status,
-  onDelete
-}) {
-  const authorName = author?.name || author;
-
-  const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete this blog?")) {
-      onDelete(slug);
-    }
-  };
-
+export default function BlogCard({ title, author, category, slug, status }) {
   return (
-    <div className="border p-5 rounded-lg shadow-md bg-white hover:shadow-lg transition-all duration-200">
-      <h3 className="text-xl font-bold text-gray-800">{title}</h3>
-      <p className="text-sm text-gray-600 mt-1">
-        By {authorName} • {category} •{" "}
-        <span className="capitalize">{status}</span>
-      </p>
+    <Card className="hover:shadow-lg transition-all duration-200 border border-gray-200">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold line-clamp-2">
+          {title}
+        </CardTitle>
+        <div className="flex gap-2 items-center text-sm text-gray-500">
+          <span>By {author?.name || author}</span> •
+          <Badge variant="outline" className="rounded-full px-2 text-xs capitalize">
+            {category}
+          </Badge>
+        </div>
+      </CardHeader>
 
-      <div className="flex items-center gap-2 mt-4">
-        
-        {/* Read */}
-        <Link
-          to={`/blog/${slug}`}
-          className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition"
-        >
-          Read
+      <CardContent className="flex justify-between items-center pt-3">
+        <Link to={`/blog/${slug}`}>
+          <Button variant="default" size="sm">
+            Read
+          </Button>
         </Link>
 
-        {/* Edit */}
-        <Link
-          to={`/edit/${slug}`}
-          className="px-3 py-1 text-sm bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition"
+        <Badge
+          className={`capitalize px-2 text-xs ${
+            status === "published" ? "bg-green-500 text-white" : "bg-yellow-500 text-white"
+          }`}
         >
-          Edit
-        </Link>
-
-        {/* Delete */}
-        <button
-          onClick={handleDelete}
-          className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
+          {status}
+        </Badge>
+      </CardContent>
+    </Card>
   );
 }
