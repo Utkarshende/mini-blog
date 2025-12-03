@@ -1,60 +1,81 @@
-import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import API from "../api/axios";
 import toast from "react-hot-toast";
-import { getToken } from "../util.js";
 import MarkdownEditor from "@uiw/react-markdown-editor";
 
-export default function EditBlog() {
+function EditBlog() {
   const { slug } = useParams();
-  const [blog, setBlog] = useState(null);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const navigate = useNavigate();
 
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [category, setCategory] = useState("");
+
+  // Fetch existing blog
   useEffect(() => {
-    axios.get(`${API_URL}/api/blogs/${slug}`).then(res => setBlog(res.data.blog));
-  }, []);
-
-  const saveChanges = async () => {
-    try {
-      const token = getToken();
-      const res = await axios.put(
-        `${API_URL}/api/blogs/${slug}`,
-        blog,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (res.data.success) {
-        toast.success("Blog updated!");
-        setTimeout(() => window.location.href = `/blog/${slug}`, 1000);
+    async function fetchBlog() {
+      try {
+        const res = await API.get(`/blogs/${slug}`);
+        const blog = res.data.blog;
+        setTitle(blog.title);
+        setContent(blog.content);
+        setCategory(blog.category);
+      } catch (err) {
+        toast.error("Failed to fetch blog");
       }
-    } catch (err) {
-      toast.error("Update failed");
     }
-  };
+    fetchBlog();
+  }, [slug]);
 
-  if (!blog) return <p>Loading...</p>;
+  async function saveChanges() {
+    try {
+      await API.put(`/blogs/${slug}`, {
+        title,
+        content,
+        category,
+      });
+
+      toast.success("Blog updated!");
+      navigate(`/blog/${slug}`);
+    } catch (err) {
+      toast.error("Update failed!");
+      console.error(err.response?.data);
+    }
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-3xl mx-auto mt-10 space-y-4">
+      <h1 className="text-2xl font-bold">Edit Blog</h1>
+
       <input
-        type="text"
-        value={blog.title}
-        onChange={(e) => setBlog({ ...blog, title: e.target.value })}
-        className="border p-3 w-full rounded mb-4"
+        className="w-full p-2 border rounded"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Blog Title"
       />
 
       <MarkdownEditor
-        value={blog.content}
-        onChange={(value) => setBlog({ ...blog, content: value })}
-        height="500px"
+        height={400}
+        value={content}
+        onChange={(value) => setContent(value)}
       />
 
-      <button 
+      <input
+        className="w-full p-2 border rounded"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        placeholder="Category"
+      />
+
+      <button
+        className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
         onClick={saveChanges}
-        className="bg-indigo-600 text-white px-6 py-2 rounded mt-4"
       >
         Save Changes
       </button>
     </div>
   );
 }
+
+export default EditBlog;

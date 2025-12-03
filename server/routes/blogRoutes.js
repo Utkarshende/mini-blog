@@ -12,10 +12,14 @@ import { jwtCheck } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// List blogs
 router.get('/', getBlogs);
+
+// Create blog (🔥 this was missing)
+router.post('/', jwtCheck, postBlogs);
+
 router.get('/myposts', jwtCheck, getMyPosts);
 
-// 🔥 DELETE must come BEFORE :slug route
 router.delete('/:slug', jwtCheck, deleteBlog);
 
 // edit route
@@ -24,7 +28,7 @@ router.put('/:slug', jwtCheck, putBlogs);
 // publish route
 router.patch('/:slug/publish', jwtCheck, patchPublishBlog);
 
-// 🔥 keep this LAST always:
+// keep last always:
 router.get('/:slug', getBlogForSlug);
 
 export default router;
