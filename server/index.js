@@ -11,6 +11,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+// server/index.js
+
+// Define the specific origin of your client's development server
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173'; 
+// We use an environment variable here to make it easy to change for production/Netlify
+
+app.use(cors({
+    origin: CLIENT_ORIGIN, // This explicitly allows only your client's URL
+    credentials: true,     // This is CRUCIAL for requests that involve cookies/sessions
+}));
+
+app.use(express.json()); // Make sure this runs AFTER cors middleware
+// ... rest of your file
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, { })
   .then(() => console.log('MongoDB connected'))
