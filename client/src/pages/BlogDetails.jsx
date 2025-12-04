@@ -14,10 +14,14 @@ function BlogDetails() {
   // current user from localStorage
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
+  // Helper to get token cleanly
+  const getToken = () => localStorage.getItem("token");
+
   useEffect(() => {
     async function fetchBlog() {
       try {
-        const token = localStorage.getItem("token");
+        // CLEANUP: Using simple getItem, assuming token is stored correctly in Login.jsx
+        const token = getToken(); 
         const res = await API.get(`/blogs/${slug}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -36,7 +40,11 @@ function BlogDetails() {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
     try {
-      await API.delete(`/blogs/${slug}`);
+      // CLEANUP: Using simple getItem, assuming token is stored correctly
+      const token = getToken(); 
+      await API.delete(`/blogs/${slug}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       toast.success("Blog deleted successfully");
       navigate("/myposts");
     } catch (err) {
