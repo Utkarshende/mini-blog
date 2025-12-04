@@ -8,37 +8,57 @@ import userRoutes from './routes/userRoutes.js';
 dotenv.config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
+// --- START CORRECTION & REFINEMENT ---
 
-// server/index.js
-
-// Define the specific origin of your client's development server
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173'; 
-// We use an environment variable here to make it easy to change for production/Netlify
+// Define the allowed origins for CORS. 
+// 1. http://localhost:5173 is for local dev testing.
+// 2. The Netlify URL is for production access.
+// These should be configured via environment variables for security and deployment flexibility.
+const allowedOrigins = [
+    'http://localhost:5173', 
+    'https://mineeblog.netlify.app' // YOUR DEPLOYED FRONT-END URL
+    // You can add other environments here if needed (e.g., staging)
+];
 
 app.use(cors({
-    origin: CLIENT_ORIGIN, // This explicitly allows only your client's URL
-    credentials: true,     // This is CRUCIAL for requests that involve cookies/sessions
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, or same-origin requests)
+        if (!origin) return callback(null, true); 
+        
+        // Check if the request origin is in our allowed list
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            // Block the request if the origin is not allowed
+            const errorMessage = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+            callback(new Error(errorMessage), false);
+        }
+    },
+    credentials: true // ESSENTIAL: Allows cookies, authorization headers, etc.
 }));
 
-app.use(express.json()); // Make sure this runs AFTER cors middleware
-// ... rest of your file
+// --- END CORRECTION & REFINEMENT ---
+
+// Middleware to parse incoming JSON payloads (must be after CORS)
+app.use(express.json()); 
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, { })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB Error:', err));
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB Error:', err));
 
 // Routes
 app.use('/api/blogs', blogRoutes);
-app.use('/api', userRoutes);
+app.use('/api', userRoutes); // Assumes /api/login is here
+
+// Logging Middleware (good for debugging)
 app.use((req, res, next) => {
-  console.log("➡️", req.method, req.url);
-  next();
+  console.log("➡️", req.method, req.url);
+  next();
 });
 
+// Basic check route
 app.get('/', (req, res) => res.send('API is running'));
 
 const PORT = process.env.PORT || 8080;
