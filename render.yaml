@@ -1,0 +1,8 @@
+# render.yaml
+
+# A collection of rewrite/redirect rules for the static site
+rewrites:
+  # This rule matches every request path (/*)
+  # and serves the index.html file to allow React Router to handle the route.
+  - from: /*
+    to: /index.html
