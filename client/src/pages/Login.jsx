@@ -14,8 +14,7 @@ export default function Login() {
 
     try {
       setLoading(true);
-      // CORRECTION: Changed '/login' to '/api/login' to match backend prefix
-      const res = await API.post('/api/login', { email, password }); 
+      const res = await API.post('/login', { email, password });
       if (res.data?.success) {
         const user = res.data.data;
         localStorage.setItem('token', user.token);

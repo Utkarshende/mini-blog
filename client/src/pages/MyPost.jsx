@@ -8,16 +8,12 @@ export default function MyPost() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Helper to get token cleanly
-  const getToken = () => localStorage.getItem("token");
-
   useEffect(() => {
     const fetchMyPosts = async () => {
       try {
         const res = await API.get(`/blogs/myposts`, {
           headers: {
-            // CLEANUP: Removed .replace(/"/g, "")
-            Authorization: `Bearer ${getToken()}`,
+            Authorization: `Bearer ${localStorage.getItem("token")?.replace(/"/g, "")}`,
           },
         });
 
@@ -43,8 +39,7 @@ export default function MyPost() {
     try {
       const res = await API.delete(`/blogs/${slug}`, {
         headers: {
-          // CLEANUP: Removed .replace(/"/g, "")
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${localStorage.getItem("token")?.replace(/"/g, "")}`,
         },
       });
 
