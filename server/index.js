@@ -17,8 +17,8 @@ const app = express();
 // These should be configured via environment variables for security and deployment flexibility.
 const allowedOrigins = [
     'http://localhost:5173', 
-    'https://mineeblog.netlify.app' // YOUR DEPLOYED FRONT-END URL
-    // You can add other environments here if needed (e.g., staging)
+    'https://mineeblog.netlify.app',
+    'https://mini-blog-front.onrender.com'  
 ];
 
 app.use(cors({
@@ -35,30 +35,21 @@ app.use(cors({
             callback(new Error(errorMessage), false);
         }
     },
-    credentials: true // ESSENTIAL: Allows cookies, authorization headers, etc.
+    credentials: true 
 }));
-
-// --- END CORRECTION & REFINEMENT ---
-
-// Middleware to parse incoming JSON payloads (must be after CORS)
 app.use(express.json()); 
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, { })
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB Error:', err));
 
-// Routes
 app.use('/api/blogs', blogRoutes);
-app.use('/api', userRoutes); // Assumes /api/login is here
-
-// Logging Middleware (good for debugging)
+app.use('/api', userRoutes); 
 app.use((req, res, next) => {
   console.log("➡️", req.method, req.url);
   next();
 });
 
-// Basic check route
 app.get('/', (req, res) => res.send('API is running'));
 
 const PORT = process.env.PORT || 8080;
