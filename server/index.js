@@ -9,48 +9,47 @@ dotenv.config();
 
 const app = express();
 
-// --- START CORRECTION & REFINEMENT ---
-
-// Define the allowed origins for CORS. 
-// 1. http://localhost:5173 is for local dev testing.
-// 2. The Netlify URL is for production access.
-// These should be configured via environment variables for security and deployment flexibility.
 const allowedOrigins = [
-    'http://localhost:5173', 
-    'https://mineeblog.netlify.app',
-    'https://mini-blog-front.onrender.com'  
+  "http://localhost:5173",
+  "https://mini-blog-mpxciqyw5-utkarshas-projects-b2961f40.vercel.app",
+  "https://mini-blog-front.onrender.com",
+  "https://mineeblog.netlify.app"
 ];
 
+// ---- CORS FIX: Clean + supports OPTIONS ----
 app.use(cors({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, or same-origin requests)
-        if (!origin) return callback(null, true); 
-        
-        // Check if the request origin is in our allowed list
-        if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            // Block the request if the origin is not allowed
-            const errorMessage = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
-            callback(new Error(errorMessage), false);
-        }
-    },
-    credentials: true 
+  origin: allowedOrigins,
+  credentials: true,
+  methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
-app.use(express.json()); 
 
-mongoose.connect(process.env.MONGODB_URI, { })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB Error:', err));
+// ---- Ensures preflight passes ----
+app.options("*", cors());
 
-app.use('/api/blogs', blogRoutes);
-app.use('/api', userRoutes); 
-app.use((req, res, next) => {
-  console.log("➡️", req.method, req.url);
-  next();
+app.use(express.json());
+
+// ---- Test Routes first ----
+app.get("/", (req, res) => res.send("API is running"));
+app.get("/api/test", (req, res) => {
+  res.json({ success: true, message: "Backend working" });
 });
 
-app.get('/', (req, res) => res.send('API is running'));
+// ---- Database ----
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB Error:', err));
 
+// ---- Logging middleware ----
+app.use((req, res, next) => {
+  console.log(`➡️ ${req.method} ${req.url}`);
+  next();
+});
+
+// ---- Routes ----
+app.use('/api/blogs', blogRoutes);
+app.use('/api', userRoutes);
+
+// ---- Server ----
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));
