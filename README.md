@@ -1,4 +1,4 @@
-# [Tiny Blog 📑] {https://mini-blog-front.onrender.com/}
+# Tiny Blog 📑
 
 A full-stack MERN blogging platform where users can write, edit, publish, and read blogs.
 This app includes authentication, blog management, and a clean UI powered by Shadcn UI, React, and TailwindCSS.
