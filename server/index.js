@@ -13,17 +13,15 @@ const allowedOrigins = [
     "http://localhost:5173",
     'https://mini-blog-5n8i5cs9k-utkarshas-projects-b2961f40.vercel.app/',
     "https://mini-blog-front.onrender.com",
-    "https://mineeblog.netlify.app",
-    'https://mini-blog-two-theta.vercel.app' // Your new Vercel URL
+    "https://mineeeblog.netlify.app",
+    'https://mini-blog-two-theta.vercel.app' 
 ];
 
-// 1. Corrected CORS Configuration
-// The single app.use(cors) middleware handles both normal requests and OPTIONS preflight checks.
-// The problematic line app.options("*", cors()); has been REMOVED.
+
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
-    methods: "GET,POST,PUT,PATCH,DELETE", // Removed "OPTIONS" as it's handled by middleware
+    methods: "GET,POST,PUT,PATCH,DELETE", 
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
@@ -36,7 +34,7 @@ app.get("/api/test", (req, res) => {
     res.json({ success: true, message: "Backend working" });
 });
 
-// 4. Robust Database Connection
+// 4. Database Connection
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
