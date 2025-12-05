@@ -5,7 +5,7 @@ This app includes authentication, blog management, and a clean UI powered by Sha
 
 ## Live Demo 
 
-Click on the link : 
+Click on the link : https://mini-blog-front.onrender.com
 
 ## 🚀 Tech Stack
 Layer	Technology
