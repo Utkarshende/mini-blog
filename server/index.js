@@ -10,47 +10,60 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://mini-blog-mpxciqyw5-utkarshas-projects-b2961f40.vercel.app",
-  "https://mini-blog-front.onrender.com",
-  "https://mineeblog.netlify.app",
-  'https://mini-blog-two-theta.vercel.app'
+    "http://localhost:5173",
+    "https://mini-blog-mpxciqyw5-utkarshas-projects-b2961f40.vercel.app",
+    "https://mini-blog-front.onrender.com",
+    "https://mineeblog.netlify.app",
+    'https://mini-blog-two-theta.vercel.app' // Your new Vercel URL
 ];
 
-// ---- CORS FIX: Clean + supports OPTIONS ----
+// 1. Corrected CORS Configuration
+// The single app.use(cors) middleware handles both normal requests and OPTIONS preflight checks.
+// The problematic line app.options("*", cors()); has been REMOVED.
 app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-  allowedHeaders: ["Content-Type", "Authorization"]
+    origin: allowedOrigins,
+    credentials: true,
+    methods: "GET,POST,PUT,PATCH,DELETE", // Removed "OPTIONS" as it's handled by middleware
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ---- Ensures preflight passes ----
-app.options("*", cors());
-
+// 2. Standard Express Middleware
 app.use(express.json());
 
-// ---- Test Routes first ----
+// 3. Test Routes
 app.get("/", (req, res) => res.send("API is running"));
 app.get("/api/test", (req, res) => {
-  res.json({ success: true, message: "Backend working" });
+    res.json({ success: true, message: "Backend working" });
 });
 
-// ---- Database ----
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB Error:', err));
+// 4. Robust Database Connection
+const MONGODB_URI = process.env.MONGODB_URI;
 
-// ---- Logging middleware ----
+if (!MONGODB_URI) {
+    console.error("🚫 ERROR: MONGODB_URI is not defined.");
+    process.exit(1);
+}
+
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('✅ MongoDB connected'))
+    .catch(err => {
+        console.error('❌ MongoDB Error: Failed to connect', err);
+        // Exit the process if the database connection fails
+        process.exit(1); 
+    });
+
+
+// 5. Logging middleware
 app.use((req, res, next) => {
-  console.log(`➡️ ${req.method} ${req.url}`);
-  next();
+    console.log(`➡️ ${req.method} ${req.url}`);
+    next();
 });
 
-// ---- Routes ----
+// 6. Main Routes
 app.use('/api/blogs', blogRoutes);
 app.use('/api', userRoutes);
 
-// ---- Server ----
+// 7. Server Start
 const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));
