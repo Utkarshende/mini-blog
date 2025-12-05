@@ -11,7 +11,7 @@ const app = express();
 
 const allowedOrigins = [
     "http://localhost:5173",
-    "https://mini-blog-mpxciqyw5-utkarshas-projects-b2961f40.vercel.app",
+    'https://mini-blog-5n8i5cs9k-utkarshas-projects-b2961f40.vercel.app/',
     "https://mini-blog-front.onrender.com",
     "https://mineeblog.netlify.app",
     'https://mini-blog-two-theta.vercel.app' // Your new Vercel URL
