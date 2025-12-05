@@ -1,6 +1,6 @@
 import React from 'react';
 import { getCurrentUser } from '../util.js';
-import { Link } from 'react-router';
+import { Link , useNavigate} from 'react-router';
 
 export default function Navbar() {
   const user = getCurrentUser();
@@ -8,7 +8,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   return (
