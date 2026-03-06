@@ -9,7 +9,6 @@ const blogSchema = new Schema({
   author: { type: Schema.Types.ObjectId, ref: "User" },
 }, { timestamps: true });
 
-// Auto-generate slug
 blogSchema.pre("save", function(next) {
   if(!this.slug) {
     this.slug = slugify(this.title, { lower: true, strict: true }) + "-" + Date.now();
