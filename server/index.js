@@ -25,16 +25,13 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// 2. Standard Express Middleware
 app.use(express.json());
 
-// 3. Test Routes
 app.get("/", (req, res) => res.send("API is running"));
 app.get("/api/test", (req, res) => {
     res.json({ success: true, message: "Backend working" });
 });
 
-// 4. Database Connection
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
