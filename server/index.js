@@ -43,22 +43,18 @@ mongoose.connect(MONGODB_URI)
     .then(() => console.log('✅ MongoDB connected'))
     .catch(err => {
         console.error('❌ MongoDB Error: Failed to connect', err);
-        // Exit the process if the database connection fails
         process.exit(1); 
     });
 
 
-// 5. Logging middleware
 app.use((req, res, next) => {
     console.log(`➡️ ${req.method} ${req.url}`);
     next();
 });
 
-// 6. Main Routes
 app.use('/api/blogs', blogRoutes);
 app.use('/api', userRoutes);
 
-// 7. Server Start
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));
